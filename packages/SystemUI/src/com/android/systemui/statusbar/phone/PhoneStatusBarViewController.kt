@@ -309,19 +309,6 @@ private constructor(
 
     fun setBrightnessControlEnabled(enabled: Boolean) {
         mView.brightnessControlEnabled = enabled
-        if (enabled && DesktopExperienceFlags.ENABLE_REMOVE_STATUS_BAR_INPUT_LAYER.isTrue()) {
-            mView.post {
-                val loc = IntArray(2)
-                mView.getLocationOnScreen(loc)
-                val region = Region(
-                    loc[0],
-                    loc[1],
-                    loc[0] + mView.width,
-                    loc[1] + mView.height
-                )
-                mView.updateTouchableRegion(region)
-            }
-        }
     }
 
     /**
@@ -347,6 +334,7 @@ private constructor(
     fun onTouch(event: MotionEvent) {
         if (mView.brightnessControlEnabled) {
             centralSurfaces.brightnessControl(event)
+            if (!centralSurfaces.commandQueuePanelsEnabled) return
         }
 
         val upOrCancel =

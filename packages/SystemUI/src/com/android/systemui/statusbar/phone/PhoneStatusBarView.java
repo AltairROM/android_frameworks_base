@@ -339,6 +339,14 @@ public class PhoneStatusBarView extends FrameLayout {
         mBrightnessControlEnabled = enabled;
     }
 
+    public boolean getBrightnessControlEnabled() {
+        return mBrightnessControlEnabled;
+    }
+
+    public void setBrightnessControlEnabled(boolean enabled) {
+        mBrightnessControlEnabled = enabled;
+    }
+
     public void updateResources() {
         mCutoutSideNudge = getResources().getDimensionPixelSize(
                 R.dimen.display_cutout_margin_consumption);
