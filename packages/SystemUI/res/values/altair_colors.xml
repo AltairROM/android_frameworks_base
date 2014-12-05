@@ -6,11 +6,6 @@
 -->
 <resources>
 
-<<<<<<< HEAD:packages/SystemUI/res/values/altair_dimens.xml
-    <!-- Power Menu Lite-->
-    <dimen name="global_actions_light_icon_padding">32dp</dimen>
-=======
     <!-- Notification counter -->
     <color name="notification_number_text_color">#ff000000</color>
->>>>>>> e25dcc9dc4e9 (SystemUI: Forward-port notification counters):packages/SystemUI/res/values/cr_colors.xml
 </resources>
