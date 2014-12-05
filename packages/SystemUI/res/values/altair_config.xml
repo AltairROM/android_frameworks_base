@@ -6,4 +6,6 @@
 -->
 <resources>
 
+    <!-- Notification counter -->
+    <integer name="status_bar_notification_info_maxnum">999</integer>
 </resources>
