@@ -7440,5 +7440,8 @@ message MetricsEvent {
 
     // Altair ROM Settings
     ALTAIR_SETTINGS = 4000;
+
+    // Panel for Bluetooth
+    PANEL_BLUETOOTH = 4001;
   }
 }
