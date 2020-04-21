@@ -26,4 +26,3 @@
     <include layout="@layout/status_bar_mobile_signal_group_inner" />
 
 </com.android.systemui.statusbar.StatusBarMobileView>
-
