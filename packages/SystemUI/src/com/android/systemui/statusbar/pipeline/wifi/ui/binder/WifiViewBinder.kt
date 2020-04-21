@@ -60,8 +60,8 @@ object WifiViewBinder {
         val groupView = view.requireViewById<ViewGroup>(R.id.wifi_group)
         val iconView = view.requireViewById<ImageView>(R.id.wifi_signal)
         val dotView = view.requireViewById<StatusBarIconView>(R.id.status_bar_dot)
-        val activityInView = view.requireViewById<ImageView>(R.id.wifi_in)
-        val activityOutView = view.requireViewById<ImageView>(R.id.wifi_out)
+        val activityInView = view.requireViewById<ImageView>(R.id.activity_in)
+        val activityOutView = view.requireViewById<ImageView>(R.id.activity_out)
         val activityContainerView = view.requireViewById<View>(R.id.inout_container)
         val airplaneSpacer = view.requireViewById<View>(R.id.wifi_airplane_spacer)
 
