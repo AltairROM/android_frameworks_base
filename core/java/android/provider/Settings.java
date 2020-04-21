@@ -5779,6 +5779,12 @@ public final class Settings {
         public static final String DARK_MODE_BACKGROUND_THEME = "dark_mode_background_theme";
 
         /**
+         * Whether to display data activity arrows for wifi/data connections
+         * @hide
+         */
+        public static final String DATA_ACTIVITY_ARROWS = "data_activity_arrows";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
