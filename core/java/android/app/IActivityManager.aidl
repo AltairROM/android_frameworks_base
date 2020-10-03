@@ -1038,4 +1038,9 @@ interface IActivityManager {
      */
     @EnforcePermission("INTERACT_ACROSS_USERS_FULL")
     IBinder refreshIntentCreatorToken(in Intent intent);
+
+    /**
+     *  Force full screen for devices with cutout
+     */
+    boolean shouldForceCutoutFullscreen(in String packageName);
 }
