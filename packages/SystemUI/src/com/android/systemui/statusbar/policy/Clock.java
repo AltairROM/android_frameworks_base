@@ -125,7 +125,7 @@ public class Clock extends TextView implements
     private static final int HIDE_DURATION = 60; // 1 minute
     private static final int SHOW_DURATION = 5; // 5 seconds
 
-    private int mAmPmStyle = AM_PM_STYLE_GONE;
+    private int mAmPmStyle = AM_PM_STYLE_SMALL;
     private final boolean mShowDark;
     private boolean mShowSeconds;
     private Handler mSecondsHandler;
@@ -441,7 +441,7 @@ public class Clock extends TextView implements
                 break;
             case STATUS_BAR_AM_PM:
                 mAmPmStyle =
-                        TunerService.parseInteger(newValue, AM_PM_STYLE_GONE);
+                        TunerService.parseInteger(newValue, AM_PM_STYLE_SMALL);
                 break;
             case STATUS_BAR_CLOCK_AUTO_HIDE_LAUNCHER:
                 handleTaskStackListener(TunerService.parseIntegerSwitch(newValue, false));
