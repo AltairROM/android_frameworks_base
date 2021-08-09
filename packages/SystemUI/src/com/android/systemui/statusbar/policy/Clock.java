@@ -95,8 +95,9 @@ public class Clock extends TextView implements
     private static final int AM_PM_STYLE_NORMAL  = 0;
     private static final int AM_PM_STYLE_SMALL   = 1;
     private static final int AM_PM_STYLE_GONE    = 2;
+    private static final int DEFAULT_AM_PM_STYLE = AM_PM_STYLE_SMALL;
 
-    private int mAmPmStyle = AM_PM_STYLE_GONE;
+    private int mAmPmStyle = DEFAULT_AM_PM_STYLE;
     private boolean mShowSeconds;
     private ContentObserver mContentObserver;
     private Handler mSecondsHandler;
@@ -362,7 +363,7 @@ public class Clock extends TextView implements
     private int readClockAmPm(Context context) {
         return LineageSettings.System.getIntForUser(
                 context.getContentResolver(), LineageSettings.System.STATUS_BAR_AM_PM,
-                AM_PM_STYLE_GONE, UserHandle.USER_CURRENT);
+                DEFAULT_AM_PM_STYLE, UserHandle.USER_CURRENT);
     }
 
     private void updateShowSeconds() {
@@ -532,4 +533,3 @@ public class Clock extends TextView implements
         }
     };
 }
-
