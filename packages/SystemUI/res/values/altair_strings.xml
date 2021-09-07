@@ -156,4 +156,9 @@
     <string name="screenrecord_delete_label">Delete</string>
     <!-- A toast message shown after successfully deleting a screen recording [CHAR LIMIT=NONE] -->
     <string name="screenrecord_delete_description">Screen recording deleted</string>
+
+    <!-- Audio mode QS tile -->
+    <string name="quick_settings_audio_mode">Audio mode</string>
+    <string name="quick_settings_audio_mode_mono">Mono</string>
+    <string name="quick_settings_audio_mode_stereo">Stereo</string>
 </resources>
