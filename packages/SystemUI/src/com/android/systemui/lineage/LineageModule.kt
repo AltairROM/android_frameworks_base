@@ -19,6 +19,7 @@ package com.android.systemui.lineage
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.AmbientDisplayTile
 import com.android.systemui.qs.tiles.AODTile
+import com.android.systemui.qs.tiles.AudioModeTile
 import com.android.systemui.qs.tiles.CPUInfoTile
 import com.android.systemui.qs.tiles.CaffeineTile
 import com.android.systemui.qs.tiles.CellularTile
@@ -59,6 +60,12 @@ interface LineageModule {
     @IntoMap
     @StringKey(AODTile.TILE_SPEC)
     fun bindAODTile(aodTile: AODTile): QSTileImpl<*>
+
+    /** Inject AudioModeTile into tileMap in QSModule */
+    @Binds
+    @IntoMap
+    @StringKey(AudioModeTile.TILE_SPEC)
+    fun bindAudioModeTile(audioModeTile: AudioModeTile): QSTileImpl<*>
 
     /** Inject CPUInfoTile into tileMap in QSModule */
     @Binds
