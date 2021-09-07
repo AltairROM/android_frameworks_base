@@ -250,4 +250,9 @@
 
     <!-- VPN tethering QS tile -->
     <string name="vpn_tethering_label">VPN tethering</string>
+
+    <!-- Audio mode QS tile -->
+    <string name="quick_settings_audio_mode">Audio mode</string>
+    <string name="quick_settings_audio_mode_mono">Mono</string>
+    <string name="quick_settings_audio_mode_stereo">Stereo</string>
 </resources>
