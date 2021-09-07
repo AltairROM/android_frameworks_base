@@ -22,6 +22,7 @@ import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.AmbientDisplayTile
 import com.android.systemui.qs.tiles.AODTile
+import com.android.systemui.qs.tiles.AudioModeTile
 import com.android.systemui.qs.tiles.CPUInfoTile
 import com.android.systemui.qs.tiles.CaffeineTile
 import com.android.systemui.qs.tiles.CellularTile
@@ -67,6 +68,12 @@ interface LineageModule {
     @IntoMap
     @StringKey(AODTile.TILE_SPEC)
     fun bindAODTile(aodTile: AODTile): QSTileImpl<*>
+
+    /** Inject AudioModeTile into tileMap in QSModule */
+    @Binds
+    @IntoMap
+    @StringKey(AudioModeTile.TILE_SPEC)
+    fun bindAudioModeTile(audioModeTile: AudioModeTile): QSTileImpl<*>
 
     /** Inject CPUInfoTile into tileMap in QSModule */
     @Binds
@@ -243,6 +250,21 @@ interface LineageModule {
                 instanceId = uiEventLogger.getNewInstanceId(),
                 category = TileCategory.DISPLAY,
             )
+
+        @Provides
+        @IntoMap
+        @StringKey(AudioModeTile.TILE_SPEC)
+        fun provideAudioModeConfig(uiEventLogger: QsEventLogger): QSTileConfig {
+            return QSTileConfig(
+                tileSpec = TileSpec.create(AudioModeTile.TILE_SPEC),
+                uiConfig = QSTileUIConfig.Resource(
+                    iconRes = R.drawable.ic_qs_audio_mode_stereo,
+                    labelRes = R.string.quick_settings_audio_mode
+                ),
+                instanceId = uiEventLogger.getNewInstanceId(),
+                category = TileCategory.ACCESSIBILITY
+            )
+        }
 
         @Provides
         @IntoMap
