@@ -169,4 +169,10 @@
     <!-- Content description for the smartspace paging arrows [CHAR LIMIT=NONE] -->
     <string name="accessibility_smartspace_previous_page">Previous page</string>
     <string name="accessibility_smartspace_next_page">Next page</string>
+
+    <!-- Data usage info in QS footer -->
+    <string name="usage_data">used today</string>
+    <string name="usage_data_weekly">used this week</string>
+    <string name="usage_data_default_suffix">Data</string>
+    <string name="usage_wifi_default_suffix">Wi-Fi</string>
 </resources>
