@@ -17,4 +17,9 @@
 
     <!-- Name of the UDFPS HBM DimLayer for the HWComposer -->
     <string name="config_udfpsHbmDimLayer" translatable="false">OnScreenFingerprintDimLayer</string>
+
+    <!-- Whether to enable burn-in protection for statusbar and navbar -->
+    <bool name="config_systemBarBurnInProtection">@*android:bool/config_enableBurnInProtection</bool>
+    <!-- Interval between subsequent shifting of statusbar and navbar contents, in seconds -->
+    <integer name="config_systemBarBurnInProtectionShiftInterval">60</integer>
 </resources>
