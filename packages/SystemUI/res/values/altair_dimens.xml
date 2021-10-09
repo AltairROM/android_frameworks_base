@@ -28,4 +28,7 @@
 
     <!-- QQS Brightness slider -->
     <dimen name="quick_qs_brightness_margin_top">24dp</dimen>
+
+    <!-- Maximum vertical offset of statusbar for burn-in protection -->
+    <dimen name="status_bar_offset_max_y">4dp</dimen>
 </resources>
