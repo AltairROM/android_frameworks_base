@@ -28,7 +28,9 @@ import android.graphics.Insets
 import android.os.Bundle
 import android.os.Trace
 import android.os.Trace.TRACE_TAG_APP
+import android.os.UserHandle;
 import android.provider.AlarmClock
+import android.provider.Settings
 import android.view.DisplayCutout
 import android.view.View
 import android.view.ViewGroup
@@ -84,6 +86,8 @@ import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.NextAlarmController
 import com.android.systemui.statusbar.policy.VariableDateView
 import com.android.systemui.statusbar.policy.VariableDateViewController
+import com.android.systemui.tuner.TunerService
+import com.android.systemui.tuner.TunerService.Tunable
 import com.android.systemui.util.ViewController
 import dagger.Lazy
 import java.io.PrintWriter
@@ -123,7 +127,8 @@ constructor(
     private val nextAlarmController: NextAlarmController,
     private val activityStarter: ActivityStarter,
     private val statusOverlayHoverListenerFactory: StatusOverlayHoverListenerFactory,
-) : ViewController<View>(header), Dumpable {
+    private val tunerService: TunerService,
+) : ViewController<View>(header), Dumpable, TunerService.Tunable {
 
     private val statusBarContentInsetsProvider
         get() =
@@ -149,6 +154,9 @@ constructor(
 
         @VisibleForTesting internal val DEFAULT_CLOCK_INTENT = Intent(AlarmClock.ACTION_SHOW_ALARMS)
 
+        internal val STATUS_BAR_BATTERY_STYLE =
+            "system:" + Settings.System.STATUS_BAR_BATTERY_STYLE
+
         private fun Int.stateToString() =
             when (this) {
                 QQS_HEADER_CONSTRAINT -> "QQS Header"
@@ -159,6 +167,9 @@ constructor(
     }
 
     var shadeCollapseAction: Runnable? = null
+
+    private var batteryStyle = Settings.System.getIntForUser(
+             context.contentResolver, Settings.System.STATUS_BAR_BATTERY_STYLE, 0, UserHandle.USER_CURRENT)
 
     private lateinit var iconManager: TintedIconManager
     private lateinit var carrierIconSlots: List<String>
@@ -344,6 +355,10 @@ constructor(
             nextAlarmIntent = nextAlarm?.showIntent
         }
 
+    fun updateQsBatteryStyle() {
+        batteryIcon.setBatteryStyle(batteryStyle)
+    }
+
     override fun onInit() {
         variableDateViewControllerFactory.create(date as VariableDateView).init()
 
@@ -425,6 +440,10 @@ constructor(
         systemIconsHoverContainer.setOnHoverListener(
             statusOverlayHoverListenerFactory.createListener(systemIconsHoverContainer)
         )
+
+        updateQsBatteryStyle()
+
+        tunerService.addTunable(this, STATUS_BAR_BATTERY_STYLE)
     }
 
     override fun onViewDetached() {
@@ -436,6 +455,17 @@ constructor(
         statusBarIconController.removeIconGroup(iconManager)
         nextAlarmController.removeCallback(nextAlarmCallback)
         systemIconsHoverContainer.setOnHoverListener(null)
+        tunerService.removeTunable(this)
+    }
+
+    override fun onTuningChanged(key: String?, value: String?) {
+        when (key) {
+            STATUS_BAR_BATTERY_STYLE -> {
+                batteryStyle = TunerService.parseInteger(value, 0)
+                updateQsBatteryStyle()
+            }
+            else -> return
+        }
     }
 
     fun disable(state1: Int, state2: Int, animate: Boolean) {
@@ -521,17 +551,6 @@ constructor(
 
         view.setPadding(view.paddingLeft, sbInsets.top, view.paddingRight, view.paddingBottom)
         view.updateAllConstraints(changes)
-        updateBatteryMode()
-    }
-
-    private fun updateBatteryMode() {
-        qsBatteryModeController.getBatteryMode(cutout, qsExpandedFraction)?.let {
-            if (NewStatusBarIcons.isEnabled) {
-                showBatteryEstimate.value = it == MODE_ESTIMATE
-            } else {
-                batteryIcon.setPercentShowMode(it)
-            }
-        }
     }
 
     private fun updateScrollY() {
@@ -597,7 +616,6 @@ constructor(
         if (!largeScreenActive && visible) {
             logInstantEvent("updatePosition: $qsExpandedFraction")
             header.progress = qsExpandedFraction
-            updateBatteryMode()
         }
     }
 
