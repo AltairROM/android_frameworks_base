@@ -62,6 +62,7 @@ import androidx.annotation.Nullable;
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.Utils;
+import com.android.systemui.Dependency;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.ScreenPinningNotify;
@@ -84,8 +85,11 @@ import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.phone.AutoHideController;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.LightBarTransitionsController;
+import com.android.systemui.tuner.TunerService;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.pip.Pip;
+
+import lineageos.providers.LineageSettings;
 
 import java.io.PrintWriter;
 import java.util.Map;
@@ -93,10 +97,36 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+import static org.lineageos.internal.util.DeviceKeysConstants.*;
+
 /** */
-public class NavigationBarView extends FrameLayout {
+public class NavigationBarView extends FrameLayout implements TunerService.Tunable {
     final static boolean DEBUG = false;
     final static String TAG = "NavBarView";
+
+    public static final String KEY_APP_SWITCH_ACTION =
+            "lineagesystem:" + LineageSettings.System.KEY_APP_SWITCH_ACTION;
+
+    public static final int[] NAVBAR_ICON_RESOURCES = {
+        R.drawable.ic_sysbar_no_action,
+        R.drawable.ic_sysbar_menu,
+        R.drawable.ic_sysbar_recent,
+        R.drawable.ic_sysbar_search,
+        R.drawable.ic_sysbar_voice_search,
+        R.drawable.ic_sysbar_in_app_search,
+        R.drawable.ic_sysbar_camera,
+        R.drawable.ic_sysbar_screen_off,
+        R.drawable.ic_sysbar_last_app,
+        R.drawable.ic_sysbar_split_screen,
+        R.drawable.ic_sysbar_kill_app,
+        R.drawable.ic_sysbar_flashlight,
+        R.drawable.ic_sysbar_screenshot,
+        R.drawable.ic_sysbar_volume_panel,
+        R.drawable.ic_sysbar_clear_notifications,
+        R.drawable.ic_sysbar_notification_panel,
+        R.drawable.ic_sysbar_settings_panel,
+        R.drawable.ic_sysbar_ringer_modes,
+    };
 
     final static boolean ALTERNATE_CAR_MODE_UI = false;
 
@@ -468,12 +498,18 @@ public class NavigationBarView extends FrameLayout {
             mHomeDefaultIcon = getHomeDrawable();
         }
         if (densityChange || dirChange) {
-            mRecentIcon = getDrawable(R.drawable.ic_sysbar_recent);
+            Action action = Action.fromSettings(getContext().getContentResolver(),
+                    LineageSettings.System.KEY_APP_SWITCH_ACTION, Action.APP_SWITCH);
+            mRecentIcon = getDrawable(getNavbarIconRes(action));
             mContextualButtonGroup.updateIcons(mLightIconColor, mDarkIconColor);
         }
         if (orientationChange || densityChange || dirChange) {
             mBackIcon = getBackDrawable();
         }
+    }
+
+    private int getNavbarIconRes(Action action) {
+        return NAVBAR_ICON_RESOURCES[action.ordinal()];
     }
 
     /**
@@ -1077,6 +1113,8 @@ public class NavigationBarView extends FrameLayout {
         super.onAttachedToWindow();
         requestApplyInsets();
         reorient();
+        final TunerService tunerService = Dependency.get(TunerService.class);
+        tunerService.addTunable(this, KEY_APP_SWITCH_ACTION);
         if (mRotationButtonController != null) {
             mRotationButtonController.registerListeners(false /* registerRotationWatcher */);
         }
@@ -1093,6 +1131,16 @@ public class NavigationBarView extends FrameLayout {
         if (mRotationButtonController != null) {
             mFloatingRotationButton.hide();
             mRotationButtonController.unregisterListeners();
+        }
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            case KEY_APP_SWITCH_ACTION:
+                reloadNavIcons();
+                updateNavButtonIcons();
+                break;
         }
     }
 
