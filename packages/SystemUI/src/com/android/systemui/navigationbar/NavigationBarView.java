@@ -34,7 +34,6 @@ import android.annotation.DrawableRes;
 import android.app.StatusBarManager;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.database.ContentObserver;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -62,6 +61,7 @@ import androidx.annotation.Nullable;
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.Utils;
+import com.android.systemui.Dependency;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.buttons.ButtonDispatcher;
@@ -83,6 +83,7 @@ import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.phone.AutoHideController;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.LightBarTransitionsController;
+import com.android.systemui.tuner.TunerService;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.pip.Pip;
 
@@ -94,10 +95,38 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+import static org.lineageos.internal.util.DeviceKeysConstants.*;
+
 /** */
-public class NavigationBarView extends FrameLayout {
+public class NavigationBarView extends FrameLayout implements TunerService.Tunable {
     final static boolean DEBUG = false;
     final static String TAG = "NavBarView";
+
+    private static final String NAVIGATION_BAR_MENU_ARROW_KEYS =
+            "lineagesystem:" + LineageSettings.System.NAVIGATION_BAR_MENU_ARROW_KEYS;
+    public static final String KEY_APP_SWITCH_ACTION =
+            "lineagesystem:" + LineageSettings.System.KEY_APP_SWITCH_ACTION;
+
+    public static final int[] NAVBAR_ICON_RESOURCES = {
+        R.drawable.ic_sysbar_no_action,
+        R.drawable.ic_sysbar_menu,
+        R.drawable.ic_sysbar_recent,
+        R.drawable.ic_sysbar_search,
+        R.drawable.ic_sysbar_voice_search,
+        R.drawable.ic_sysbar_in_app_search,
+        R.drawable.ic_sysbar_camera,
+        R.drawable.ic_sysbar_screen_off,
+        R.drawable.ic_sysbar_last_app,
+        R.drawable.ic_sysbar_split_screen,
+        R.drawable.ic_sysbar_kill_app,
+        R.drawable.ic_sysbar_flashlight,
+        R.drawable.ic_sysbar_screenshot,
+        R.drawable.ic_sysbar_volume_panel,
+        R.drawable.ic_sysbar_clear_notifications,
+        R.drawable.ic_sysbar_notification_panel,
+        R.drawable.ic_sysbar_settings_panel,
+        R.drawable.ic_sysbar_ringer_modes,
+    };
 
     final static boolean ALTERNATE_CAR_MODE_UI = false;
 
@@ -182,7 +211,6 @@ public class NavigationBarView extends FrameLayout {
     private boolean mShowSwipeUpUi;
     private UpdateActiveTouchRegionsCallback mUpdateActiveTouchRegionsCallback;
 
-    private final ContentObserver mShowCursorKeysObserver;
     private boolean mShowCursorKeys;
     private boolean mImeVisible;
 
@@ -339,16 +367,6 @@ public class NavigationBarView extends FrameLayout {
         mButtonDispatchers.put(R.id.dpad_left, cursorLeftButton);
         mButtonDispatchers.put(R.id.dpad_right, cursorRightButton);
         mDeadZone = new DeadZone(this);
-
-        mShowCursorKeysObserver = new ContentObserver(null) {
-            @Override
-            public void onChange(boolean selfChange) {
-                mShowCursorKeys = LineageSettings.System.getInt(
-                        mContext.getContentResolver(),
-                        LineageSettings.System.NAVIGATION_BAR_MENU_ARROW_KEYS, 0) != 0;
-                setNavigationIconHints(mNavigationIconHints);
-            }
-        };
     }
 
     public void setEdgeBackGestureHandler(EdgeBackGestureHandler edgeBackGestureHandler) {
@@ -500,7 +518,9 @@ public class NavigationBarView extends FrameLayout {
             mHomeDefaultIcon = getHomeDrawable();
         }
         if (densityChange || dirChange) {
-            mRecentIcon = getDrawable(R.drawable.ic_sysbar_recent);
+            Action action = Action.fromSettings(getContext().getContentResolver(),
+                    LineageSettings.System.KEY_APP_SWITCH_ACTION, Action.APP_SWITCH);
+            mRecentIcon = getDrawable(getNavbarIconRes(action));
             mCursorLeftIcon = getDrawable(R.drawable.ic_chevron_left);
             mCursorRightIcon = getDrawable(R.drawable.ic_chevron_right);
             mContextualButtonGroup.updateIcons(mLightIconColor, mDarkIconColor);
@@ -508,6 +528,10 @@ public class NavigationBarView extends FrameLayout {
         if (orientationChange || densityChange || dirChange) {
             mBackIcon = getBackDrawable();
         }
+    }
+
+    private int getNavbarIconRes(Action action) {
+        return NAVBAR_ICON_RESOURCES[action.ordinal()];
     }
 
     /**
@@ -1134,11 +1158,9 @@ public class NavigationBarView extends FrameLayout {
         super.onAttachedToWindow();
         requestApplyInsets();
         reorient();
-
-        mContext.getContentResolver().registerContentObserver(LineageSettings.System.getUriFor(
-                        LineageSettings.System.NAVIGATION_BAR_MENU_ARROW_KEYS), false,
-                mShowCursorKeysObserver);
-        mShowCursorKeysObserver.onChange(true);
+        final TunerService tunerService = Dependency.get(TunerService.class);
+        tunerService.addTunable(this, NAVIGATION_BAR_MENU_ARROW_KEYS);
+        tunerService.addTunable(this, KEY_APP_SWITCH_ACTION);
         if (mRotationButtonController != null) {
             mRotationButtonController.registerListeners(false /* registerRotationWatcher */);
         }
@@ -1149,13 +1171,26 @@ public class NavigationBarView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        mContext.getContentResolver().unregisterContentObserver(mShowCursorKeysObserver);
         for (int i = 0; i < mButtonDispatchers.size(); ++i) {
             mButtonDispatchers.valueAt(i).onDestroy();
         }
         if (mRotationButtonController != null) {
             mFloatingRotationButton.hide();
             mRotationButtonController.unregisterListeners();
+        }
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            case NAVIGATION_BAR_MENU_ARROW_KEYS:
+                mShowCursorKeys = TunerService.parseIntegerSwitch(newValue, false);
+                setNavigationIconHints(mNavigationIconHints);
+                break;
+            case KEY_APP_SWITCH_ACTION:
+                reloadNavIcons();
+                updateNavButtonIcons();
+                break;
         }
     }
 
