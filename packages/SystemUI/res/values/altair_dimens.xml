@@ -34,4 +34,7 @@
 
     <!-- Bluetooth dialog -->
     <dimen name="bluetooth_dialog_active_device_bottom_margin">4dp</dimen>
+
+    <!-- Power Menu Lite-->
+    <dimen name="global_actions_light_icon_padding">32dp</dimen>
 </resources>
