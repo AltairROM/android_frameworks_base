@@ -823,11 +823,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 case AIRPLANE:
                     addIfShouldShowAction(tempActions, mAirplaneModeOn);
                     break;
-                case BUGREPORT:
-                    if (shouldDisplayBugReport(currentUserInfo)) {
-                        addIfShouldShowAction(tempActions, new BugReportAction());
-                    }
-                    break;
                 case FEEDBACK:
                     if (Flags.globalActionsFeedbackAction() && (mFirstFeedbackReceiver != null)) {
                         addIfShouldShowAction(
@@ -1016,12 +1011,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private boolean shouldDisplayEmergency() {
         // Emergency calling requires a telephony radio with voice calling capabilities.
         return mHasTelephonyCalling;
-    }
-
-    private boolean shouldDisplayBugReport(@Nullable UserInfo user) {
-        return user != null && user.isAdmin()
-                && mSecureSettings.getIntForUser(Settings.Secure.BUGREPORT_IN_POWER_MENU, 0,
-                user.id) != 0;
     }
 
     @Override
@@ -1353,79 +1342,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             return false;
         }
 
-    }
-
-    @VisibleForTesting
-    class BugReportAction extends SinglePressAction implements LongPressAction {
-
-        BugReportAction() {
-            super(com.android.systemui.res.R.drawable.ic_global_actions_bugreport,
-                    R.string.bugreport_title);
-        }
-
-        @Override
-        public void onPress() {
-            // don't actually trigger the bugreport if we are running stability
-            // tests via monkey
-            if (ActivityManager.isUserAMonkey()) {
-                return;
-            }
-            Trace.instantForTrack(Trace.TRACE_TAG_APP, "bugreport", "BugReportAction#onPress");
-            Log.d(TAG, "BugReportAction#onPress");
-            // Add a little delay before executing, to give the
-            // dialog a chance to go away before it takes a
-            // screenshot.
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        // Take an "interactive" bugreport.
-                        mMetricsLogger.action(
-                                MetricsEvent.ACTION_BUGREPORT_FROM_POWER_MENU_INTERACTIVE);
-                        mUiEventLogger.log(GlobalActionsEvent.GA_BUGREPORT_PRESS);
-                        if (!mIActivityManager.launchBugReportHandlerApp()) {
-                            Log.w(TAG, "Bugreport handler could not be launched");
-                            Trace.instantForTrack(Trace.TRACE_TAG_APP, "bugreport",
-                                    "BugReportAction#requestingInteractiveBugReport");
-                            Log.d(TAG, "BugReportAction#requestingInteractiveBugReport");
-                            mIActivityManager.requestInteractiveBugReport();
-                        }
-                    } catch (RemoteException e) {
-                    }
-                }
-            }, mDialogPressDelay);
-        }
-
-        @Override
-        public boolean onLongPress() {
-            // don't actually trigger the bugreport if we are running stability
-            // tests via monkey
-            if (ActivityManager.isUserAMonkey()) {
-                return false;
-            }
-            try {
-                // Take a "full" bugreport.
-                mMetricsLogger.action(MetricsEvent.ACTION_BUGREPORT_FROM_POWER_MENU_FULL);
-                mUiEventLogger.log(GlobalActionsEvent.GA_BUGREPORT_LONG_PRESS);
-                Trace.instantForTrack(Trace.TRACE_TAG_APP, "bugreport",
-                        "BugReportAction#requestingFullBugReport");
-                Log.d(TAG, "BugReportAction#requestingFullBugReport");
-                mIActivityManager.requestFullBugReport();
-            } catch (RemoteException e) {
-            }
-            return false;
-        }
-
-        public boolean showDuringKeyguard() {
-            return true;
-        }
-
-        @Override
-        public boolean showBeforeProvisioning() {
-            return Build.isDebuggable() && mSecureSettings.getIntForUser(
-                    Settings.Secure.BUGREPORT_IN_POWER_MENU, 0, mUserTracker.getUserId()) != 0
-                    && mUserTracker.getUserInfo().isAdmin();
-        }
     }
 
     private final class LogoutAction extends SinglePressAction {
