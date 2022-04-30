@@ -281,12 +281,14 @@ class LegacyGlobalActions implements DialogInterface.OnDismissListener, DialogIn
                 mItems.add(new PowerAction(mContext, mWindowManagerFuncs));
             } else if (GLOBAL_ACTION_KEY_AIRPLANE.equals(actionKey)) {
                 mItems.add(mAirplaneModeOn);
+/*
             } else if (GLOBAL_ACTION_KEY_BUGREPORT.equals(actionKey)) {
                 if (Settings.Secure.getIntForUser(mContext.getContentResolver(),
                         Settings.Secure.BUGREPORT_IN_POWER_MENU, 0, mContext.getUserId()) != 0
                         && isCurrentUserAdmin()) {
                     mItems.add(new BugReportAction());
                 }
+*/
             } else if (GLOBAL_ACTION_KEY_SILENT.equals(actionKey)) {
                 if (mShowSilentToggle) {
                     mItems.add(mSilentModeAction);
