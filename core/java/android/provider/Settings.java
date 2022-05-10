@@ -7154,6 +7154,13 @@ public final class Settings {
         public static final String SCREENSHOT_SHUTTER_SOUND = "screenshot_shutter_sound";
 
         /**
+         * Toast icon
+         * @hide
+         */
+        @Readable
+        public static final String TOAST_ICON = "toast_icon";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *
@@ -18097,7 +18104,7 @@ public final class Settings {
          * Force LTE Carrier Aggregation setting per SIM slot.
          * Use FORCE_LTE_CA_0 for SIM slot 0 (first SIM)
          * Use FORCE_LTE_CA_1 for SIM slot 1 (second SIM)
-         * 
+         *
          * Type: int (0 = disabled, 1 = enabled)
          * @hide
          */
