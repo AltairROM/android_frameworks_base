@@ -78,6 +78,7 @@ public class VolumeTile extends QSTileImpl<BooleanState> {
     @Override
     protected void handleUpdateState(BooleanState state, Object arg) {
         state.label = mContext.getString(R.string.quick_settings_volume_panel_label);
+        state.secondaryLabel = mContext.getString(R.string.quick_settings_volume_panel_secondary);
         state.icon = ResourceIcon.get(R.drawable.ic_qs_volume_panel); // TODO needs own icon
         state.state = Tile.STATE_ACTIVE;
     }
