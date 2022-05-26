@@ -150,24 +150,26 @@ public class SoundTile extends QSTileImpl<BooleanState> {
         if (mAudioManager == null) {
             return;
         }
+        state.label = mContext.getString(R.string.quick_settings_sound_label);
+        state.state = Tile.STATE_ACTIVE;
         switch (mAudioManager.getRingerModeInternal()) {
             case AudioManager.RINGER_MODE_NORMAL:
                 state.icon = ResourceIcon.get(R.drawable.ic_qs_ringer_audible);
-                state.label = mContext.getString(R.string.quick_settings_sound_ring);
+                state.secondaryLabel = mContext.getString(R.string.quick_settings_sound_ring);
                 state.contentDescription =  mContext.getString(
                         R.string.quick_settings_sound_ring);
                 state.state = Tile.STATE_ACTIVE;
                 break;
             case AudioManager.RINGER_MODE_VIBRATE:
                 state.icon = ResourceIcon.get(R.drawable.ic_qs_ringer_vibrate);
-                state.label = mContext.getString(R.string.quick_settings_sound_vibrate);
+                state.secondaryLabel = mContext.getString(R.string.quick_settings_sound_vibrate);
                 state.contentDescription =  mContext.getString(
                         R.string.quick_settings_sound_vibrate);
                 state.state = Tile.STATE_INACTIVE;
                 break;
             case AudioManager.RINGER_MODE_SILENT:
                 state.icon = ResourceIcon.get(R.drawable.ic_qs_ringer_silent);
-                state.label = mContext.getString(R.string.quick_settings_sound_dnd);
+                state.secondaryLabel = mContext.getString(R.string.quick_settings_sound_dnd);
                 state.contentDescription =  mContext.getString(
                         R.string.quick_settings_sound_dnd);
                 state.state = Tile.STATE_INACTIVE;
