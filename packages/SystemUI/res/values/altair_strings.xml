@@ -83,4 +83,5 @@
 
     <!-- Volume panel QS tile -->
     <string name="quick_settings_volume_panel_label">Volume panel</string>
+    <string name="quick_settings_volume_panel_secondary">Tap to show</string>
 </resources>
