@@ -28,7 +28,7 @@
         android:layout_height="24dp"
         android:layout_marginBottom="@dimen/global_actions_power_dialog_item_bottom_margin"
         android:scaleType="centerInside"
-        android:tint="@color/control_primary_text" />
+        android:tint="@color/global_actions_lite_icon" />
     <TextView
         android:id="@*android:id/message"
         android:layout_width="match_parent"
@@ -42,4 +42,3 @@
         android:textColor="@color/control_primary_text"
         android:textAppearance="?android:attr/textAppearanceSmall" />
 </com.android.systemui.globalactions.GlobalActionsItem>
-
