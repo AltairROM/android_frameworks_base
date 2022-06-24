@@ -94,7 +94,7 @@ public class UserIcons {
      */
     public static Drawable getDefaultUserIconInColor(Resources resources, @ColorInt int color) {
         Drawable icon = resources.getDrawable(R.drawable.ic_account_circle, null).mutate();
-        icon.setColorFilter(color, Mode.SRC_IN);
+        icon.setColorFilter(color, Mode.SRC_ATOP);
         icon.setBounds(0, 0, icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
         return icon;
     }
