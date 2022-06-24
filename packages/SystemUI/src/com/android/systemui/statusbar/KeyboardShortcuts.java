@@ -132,8 +132,7 @@ public final class KeyboardShortcuts {
 
     @VisibleForTesting
     KeyboardShortcuts(Context context, WindowManager windowManager) {
-        this.mContext = new ContextThemeWrapper(
-                context, android.R.style.Theme_DeviceDefault_Settings);
+        this.mContext = new ContextThemeWrapper(context, R.style.KeyboardShortcutsDialog);
         this.mPackageManager = AppGlobals.getPackageManager();
         if (windowManager != null) {
             this.mWindowManager = windowManager;
