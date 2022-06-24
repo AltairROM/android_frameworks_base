@@ -35,7 +35,7 @@
             android:layout_height="20dp"
             android:layout_marginBottom="14dp"
             android:scaleType="centerInside"
-            android:tint="@color/control_primary_text" />
+            android:tint="@color/global_actions_lite_icon" />
         <TextView
             android:id="@*android:id/message"
             android:layout_width="match_parent"
