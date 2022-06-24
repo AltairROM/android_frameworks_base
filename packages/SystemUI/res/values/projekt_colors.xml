@@ -24,4 +24,7 @@
     <color name="screen_pinning_positive_text_color">@android:color/white</color>
     <color name="screen_pinning_negative_text_color">@android:color/white</color>
 
+    <!-- Power Menu Lite icon tint color -->
+    <color name="global_actions_lite_icon">#F0F0F0</color>
+
 </resources>
