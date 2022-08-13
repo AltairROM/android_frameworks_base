@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: crDroid Android Project
+     SPDX-FileCopyrightText: Altair ROM Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+
+    <!-- Statusbar clock chip -->
+    <dimen name="chip_corner_radius">28dp</dimen>
+    <dimen name="status_bar_clock_chip_tb_padding">0dp</dimen>
+    <dimen name="status_bar_clock_chip_lr_padding">8dp</dimen>
+</resources>
