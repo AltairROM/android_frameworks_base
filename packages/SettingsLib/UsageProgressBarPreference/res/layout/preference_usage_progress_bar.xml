@@ -37,6 +37,7 @@
             app:layout_constraintBaseline_toBaselineOf="@id/total_summary"
             android:ellipsize="marquee"
             android:textAppearance="@*android:style/TextAppearance.DeviceDefault.Body1"
+            android:textColor="?android:attr/colorAccent"
             android:textSize="14sp"
             android:textAlignment="viewStart"/>
         <TextView
@@ -47,6 +48,7 @@
             app:layout_constraintEnd_toStartOf="@id/custom_content"
             android:ellipsize="marquee"
             android:textAppearance="@*android:style/TextAppearance.DeviceDefault.Body1"
+            android:textColor="?android:attr/colorAccent"
             android:textSize="14sp"
             android:textAlignment="viewEnd"/>
         <FrameLayout
@@ -63,6 +65,8 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:progressTint="?android:attr/colorAccent"
+        android:progressTintMode="src_in"
         android:max="100"
         android:scaleY="1"/>
 
