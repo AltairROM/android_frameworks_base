@@ -84,4 +84,10 @@
     <!-- Volume panel QS tile -->
     <string name="quick_settings_volume_panel_label">Volume panel</string>
     <string name="quick_settings_volume_panel_secondary">Tap to show</string>
+
+    <!-- QuickSettings: InternetDialog: Summary for how many devices are connected to the hotspot [CHAR LIMIT=NONE] -->
+    <plurals name="quick_settings_internet_hotspot_summary_num_devices">
+        <item quantity="one">%d device connected</item>
+        <item quantity="other">%d devices connected</item>
+    </plurals>
 </resources>
