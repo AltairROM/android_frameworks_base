@@ -228,6 +228,7 @@ import com.android.systemui.statusbar.policy.UserInfoControllerImpl;
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.surfaceeffects.ripple.RippleShader.RippleShape;
+import com.android.systemui.tuner.TunerService;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.WallpaperController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -270,7 +271,8 @@ import javax.inject.Provider;
  * {@link ActivityStarterImpl}
  */
 @SysUISingleton
-public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
+public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces,
+        TunerService.Tunable {
 
     private static final int MSG_LAUNCH_TRANSITION_TIMEOUT = 1003;
     // 1020-1040 reserved for BaseStatusBar
@@ -451,6 +453,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
     private final WallpaperManager mWallpaperManager;
     private final UserTracker mUserTracker;
     private final Provider<FingerprintManager> mFingerprintManager;
+    private final TunerService mTunerService;
     private final ActivityStarter mActivityStarter;
 
     private final DisplayMetrics mDisplayMetrics;
@@ -703,6 +706,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             AlternateBouncerInteractor alternateBouncerInteractor,
             UserTracker userTracker,
             Provider<FingerprintManager> fingerprintManager,
+            TunerService tunerService,
             ActivityStarter activityStarter,
             BrightnessMirrorShowingInteractor brightnessMirrorShowingInteractor,
             GlanceableHubContainerController glanceableHubContainerController,
@@ -799,6 +803,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mAlternateBouncerInteractor = alternateBouncerInteractor;
         mUserTracker = userTracker;
         mFingerprintManager = fingerprintManager;
+        mTunerService = tunerService;
         mActivityStarter = activityStarter;
         mBrightnessMirrorShowingInteractor = brightnessMirrorShowingInteractor;
         if (!SceneContainerFlag.isEnabled()) {
@@ -2901,6 +2906,14 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         return (mStatusBarStateController.isDozing()
                 && mDozeServiceHost.getIgnoreTouchWhilePulsing())
                 || mScreenOffAnimationController.shouldIgnoreKeyguardTouches();
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            default:
+                break;
+         }
     }
 
     // Begin Extra BaseStatusBar methods.
