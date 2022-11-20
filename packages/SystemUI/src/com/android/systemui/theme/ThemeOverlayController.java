@@ -98,6 +98,8 @@ import com.google.ux.material.libmonet.scheme.SchemeRainbow;
 import com.google.ux.material.libmonet.scheme.SchemeTonalSpot;
 import com.google.ux.material.libmonet.scheme.SchemeVibrant;
 
+import lineageos.providers.LineageSettings;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -558,6 +560,27 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
                 },
                 UserHandle.USER_ALL);
 
+        mSystemSettings.registerContentObserverForUser(
+                Settings.System.getUriFor(Settings.System.DARK_MODE_BACKGROUND_THEME),
+                false,
+                new ContentObserver(mBgHandler) {
+                    @Override
+                    public void onChange(boolean selfChange, Collection<Uri> collection, int flags,
+                            int userId) {
+                        if (DEBUG) Log.d(TAG, "Overlay changed for user: " + userId);
+                        if (mUserTracker.getUserId() != userId) {
+                            return;
+                        }
+                        if (!mDeviceProvisionedController.isUserSetup(userId)) {
+                            Log.i(TAG, "Theme application deferred when setting changed.");
+                            mDeferredThemeEvaluation = true;
+                            return;
+                        }
+                        reevaluateSystemTheme(true /* forceReload */);
+                    }
+                },
+                UserHandle.USER_ALL);
+
         mUserTracker.addCallback(mUserTrackerCallback, mMainExecutor);
 
         mConfigurationController.addCallback(mConfigurationListener);
@@ -926,6 +949,15 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         if (!categoryToPackage.containsKey(OVERLAY_CATEGORY_DYNAMIC_COLOR)
                 && mDynamicOverlay != null) {
             categoryToPackage.put(OVERLAY_CATEGORY_DYNAMIC_COLOR, mDynamicOverlay.getIdentifier());
+        }
+
+        String blackOverlayName = Settings.System.getString(
+                mContext.getContentResolver(),
+                Settings.System.DARK_MODE_BACKGROUND_THEME);
+        boolean isBlackMode = blackOverlayName != null && blackOverlayName != "" && isNightMode();
+        if (categoryToPackage.containsKey(OVERLAY_CATEGORY_SYSTEM_PALETTE) && isBlackMode) {
+            OverlayIdentifier blackTheme = new OverlayIdentifier(blackOverlayName);
+            categoryToPackage.put(OVERLAY_CATEGORY_SYSTEM_PALETTE, blackTheme);
         }
 
         Set<UserHandle> managedProfiles = new HashSet<>();
