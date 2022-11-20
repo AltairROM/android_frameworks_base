@@ -527,7 +527,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         }
 
         mSecureSettings.registerContentObserverForUserSync(
-                LineageSettings.Secure.getUriFor(LineageSettings.Secure.BERRY_BLACK_THEME),
+                Settings.System.getUriFor(Settings.System.DARK_MODE_BACKGROUND_THEME),
                 false,
                 new ContentObserver(mBgHandler) {
                     @Override
@@ -842,9 +842,10 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             }
         }
 
-        boolean isBlackMode = (LineageSettings.Secure.getIntForUser(
-                mContext.getContentResolver(), LineageSettings.Secure.BERRY_BLACK_THEME,
-                0, currentUser) == 1) && isNightMode();
+        String blackOverlayName = Settings.System.getString(
+                mContext.getContentResolver(),
+                Settings.System.DARK_MODE_BACKGROUND_THEME);
+        boolean isBlackMode = blackOverlayName != null && blackOverlayName != "" && isNightMode();
 
         // Compatibility with legacy themes, where full packages were defined, instead of just
         // colors.
@@ -860,6 +861,11 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         if (!categoryToPackage.containsKey(OVERLAY_CATEGORY_DYNAMIC_COLOR)
                 && mDynamicOverlay != null) {
             categoryToPackage.put(OVERLAY_CATEGORY_DYNAMIC_COLOR, mDynamicOverlay.getIdentifier());
+        }
+
+        if (categoryToPackage.containsKey(OVERLAY_CATEGORY_SYSTEM_PALETTE) && isBlackMode) {
+            OverlayIdentifier blackTheme = new OverlayIdentifier(blackOverlayName);
+            categoryToPackage.put(OVERLAY_CATEGORY_SYSTEM_PALETTE, blackTheme);
         }
 
         Set<UserHandle> managedProfiles = new HashSet<>();
@@ -895,7 +901,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         }
 
         mThemeManager.applyCurrentUserOverlays(categoryToPackage, fOverlays, currentUser,
-                managedProfiles, onCompleteCallback);
+                managedProfiles, onCompleteCallback, mContext);
 
     }
 
