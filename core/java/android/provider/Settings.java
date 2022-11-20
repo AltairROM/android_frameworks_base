@@ -6653,6 +6653,12 @@ public final class Settings {
          */
 
         /**
+         * Theme overlay to use for dark mode background
+         * @hide
+         */
+        public static final String DARK_MODE_BACKGROUND_THEME = "dark_mode_background_theme";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *

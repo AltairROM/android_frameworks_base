@@ -17,12 +17,14 @@ package com.android.systemui.theme;
 
 
 import android.annotation.AnyThread;
+import android.content.Context;
 import android.content.om.FabricatedOverlay;
 import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayInfo;
 import android.content.om.OverlayManager;
 import android.content.om.OverlayManagerTransaction;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Pair;
@@ -66,9 +68,6 @@ public class ThemeOverlayApplier implements Dumpable {
     static final String SETTINGS_PACKAGE = "com.android.settings";
     @VisibleForTesting
     static final String SYSUI_PACKAGE = "com.android.systemui";
-
-    static final String OVERLAY_BLACK_THEME =
-            "org.lineageos.overlay.customization.blacktheme";
 
     static final String OVERLAY_CATEGORY_DYNAMIC_COLOR =
             "android.theme.customization.dynamic_color";
@@ -218,7 +217,8 @@ public class ThemeOverlayApplier implements Dumpable {
             FabricatedOverlay[] pendingCreation,
             int currentUser,
             Set<UserHandle> managedProfiles,
-            Runnable onComplete
+            Runnable onComplete,
+            Context context
     ) {
 
         mBgExecutor.execute(() -> {
@@ -281,14 +281,20 @@ public class ThemeOverlayApplier implements Dumpable {
                 Log.e(TAG, "setEnabled failed", e);
             }
 
-            checkDarkUserOverlays(currentUser, onComplete, isBlackMode);
+            checkDarkUserOverlays(currentUser, onComplete, isBlackMode, context);
         });
     }
 
-    private void checkDarkUserOverlays(int currentUser, Runnable onComplete, boolean isBlackMode) {
+    private void checkDarkUserOverlays(int currentUser, Runnable onComplete, boolean isBlackMode, Context context) {
         OverlayManagerTransaction.Builder transaction = getTransactionBuilder();
         try {
-            transaction.setEnabled(getOverlayID(OVERLAY_BLACK_THEME), isBlackMode, currentUser);
+            String blackOverlayName = Settings.System.getString(
+                    context.getContentResolver(),
+                    Settings.System.DARK_MODE_BACKGROUND_THEME);
+            if (blackOverlayName == null) {
+                blackOverlayName = "";
+            }
+            transaction.setEnabled(getOverlayID(blackOverlayName), isBlackMode, currentUser);
             transaction.setEnabled(getOverlayID("android:neutral"), !isBlackMode, currentUser);
             mOverlayManager.commit(transaction.build());
             if (onComplete != null) {
