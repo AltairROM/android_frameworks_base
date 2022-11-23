@@ -251,7 +251,7 @@ public final class PowerManagerService extends SystemService
     static final long MIN_LONG_WAKE_CHECK_INTERVAL = 60*1000;
 
     // Default setting for double tap to wake.
-    private static final int DEFAULT_DOUBLE_TAP_TO_WAKE = 0;
+    private static final int DEFAULT_DOUBLE_TAP_TO_WAKE = 1;
 
     // System property indicating that the screen should remain off until an explicit user action
     private static final String SYSTEM_PROPERTY_QUIESCENT = "ro.boot.quiescent";
