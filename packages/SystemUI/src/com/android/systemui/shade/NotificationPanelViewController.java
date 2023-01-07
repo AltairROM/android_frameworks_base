@@ -1949,6 +1949,13 @@ public final class NotificationPanelViewController implements
         updateHeader();
         updatePanelExpanded();
         updateGestureExclusionRect();
+
+        if (mQsController.isExpandImmediate() && !mQsController.getFullyExpanded()) {
+            mNotificationStackScrollLayoutController.getView().setAlpha(0f);
+        } else {
+            mNotificationStackScrollLayoutController.getView().setAlpha(1f);
+        }
+
         if (DEBUG_DRAWABLE) {
             mView.invalidate();
         }
@@ -4109,7 +4116,7 @@ public final class NotificationPanelViewController implements
             // where the panel starts expanding even though we're also pulsing
             boolean pulseShouldGetTouch = ((!mIsExpandingOrCollapsing
                     && !mQsController.shouldQuickSettingsIntercept(mDownX, mDownY, 0))
-                    || mPulseExpansionHandler.isExpanding() 
+                    || mPulseExpansionHandler.isExpanding()
                     || mPulseExpansionHandler.getSwipeDownWhenForbidden());
             if (pulseShouldGetTouch && mPulseExpansionHandler.onTouchEvent(event)) {
                 // We're expanding all the other ones shouldn't get this anymore
