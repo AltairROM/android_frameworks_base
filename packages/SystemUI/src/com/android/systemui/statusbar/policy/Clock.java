@@ -83,6 +83,7 @@ public class Clock extends TextView implements
     private static final String VISIBLE_BY_USER = "visible_by_user";
     private static final String SHOW_SECONDS = "show_seconds";
     private static final String VISIBILITY = "visibility";
+    private static final String QSHEADER = "qsheader";
 
     public static final String STATUS_BAR_CLOCK_SECONDS =
             "system:" + Settings.System.STATUS_BAR_CLOCK_SECONDS;
@@ -130,6 +131,7 @@ public class Clock extends TextView implements
     private Handler mSecondsHandler;
     private boolean mClockAutoHide;
     private int mHideDuration = HIDE_DURATION, mShowDuration = SHOW_DURATION;
+    private boolean mQsHeader;
 
     private boolean mIsStatusBar;
 
@@ -185,6 +187,7 @@ public class Clock extends TextView implements
         bundle.putBoolean(VISIBLE_BY_USER, mClockVisibleByUser);
         bundle.putBoolean(SHOW_SECONDS, mShowSeconds);
         bundle.putInt(VISIBILITY, getVisibility());
+        bundle.putBoolean(QSHEADER, mQsHeader);
 
         return bundle;
     }
@@ -208,6 +211,7 @@ public class Clock extends TextView implements
         if (bundle.containsKey(VISIBILITY)) {
             super.setVisibility(bundle.getInt(VISIBILITY));
         }
+        mQsHeader = bundle.getBoolean(QSHEADER, false);
     }
 
     @Override
@@ -347,6 +351,10 @@ public class Clock extends TextView implements
         super.setVisibility(visibility);
     }
 
+    public void setQsHeader() {
+        mQsHeader = true;
+    }
+
     public void setClockVisibleByUser(boolean visible) {
         mClockVisibleByUser = visible;
         updateClockVisibility();
@@ -370,7 +378,7 @@ public class Clock extends TextView implements
             // Do nothing
         }
         setVisibility(visibility);
-        if (mClockAutoHide && visible && mScreenOn) {
+        if (!mQsHeader && mClockAutoHide && visible && mScreenOn) {
             autoHideHandler.postDelayed(()->autoHideClock(), mShowDuration * 1000);
         }
     }
