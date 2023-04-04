@@ -80,6 +80,7 @@ import com.android.systemui.monet.TonalPalette;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController.DeviceProvisionedListener;
+import com.android.systemui.tuner.TunerService;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.settings.SystemSettings;
@@ -123,11 +124,17 @@ import javax.inject.Inject;
  * associated work profiles
  */
 @SysUISingleton
-public class ThemeOverlayController implements CoreStartable, Dumpable {
+public class ThemeOverlayController implements CoreStartable, Dumpable, TunerService.Tunable {
     protected static final String TAG = "ThemeOverlayController";
     protected static final String OVERLAY_BERRY_BLACK_THEME =
             "org.lineageos.overlay.customization.blacktheme";
     private static final boolean DEBUG = true;
+
+    private static final String PREF_CHROMA_FACTOR = "monet_engine_chroma_factor";
+    private static final String PREF_LUMINANCE_FACTOR = "monet_engine_luminance_factor";
+    private static final String PREF_TINT_BACKGROUND = "monet_engine_tint_background";
+    private static final String PREF_ACCENT_COLOR = "monet_engine_accent_color";
+    private static final String PREF_RICHER_COLORS = "monet_engine_richer_colors";
 
     private final ThemeOverlayApplier mThemeManager;
     private final UserManager mUserManager;
@@ -175,11 +182,18 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     private final UiModeManager mUiModeManager;
     private DynamicScheme mDynamicSchemeDark;
     private DynamicScheme mDynamicSchemeLight;
+    private final TunerService mTunerService;
 
     // Defers changing themes until Setup Wizard is done.
     private boolean mDeferredThemeEvaluation;
     // Determines if we should ignore THEME_CUSTOMIZATION_OVERLAY_PACKAGES setting changes.
     private boolean mSkipSettingChange;
+
+    private float mChromaFactor = 1.0f;
+    private float mLuminanceFactor = 1.0f;
+    private boolean mTintBackground;
+    private int mAccentColor = 0;
+    private boolean mRicherColors = false;
 
     private final DeviceProvisionedListener mDeviceProvisionedListener =
             new DeviceProvisionedListener() {
@@ -421,7 +435,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             WakefulnessLifecycle wakefulnessLifecycle,
             JavaAdapter javaAdapter,
             KeyguardTransitionInteractor keyguardTransitionInteractor,
-            UiModeManager uiModeManager) {
+            UiModeManager uiModeManager,
+            ConfigurationController configurationController,
+            TunerService tunerService) {
         mContext = context;
         mIsMonetEnabled = featureFlags.isEnabled(Flags.MONET);
         mIsFidelityEnabled = featureFlags.isEnabled(Flags.COLOR_FIDELITY);
@@ -441,6 +457,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         mJavaAdapter = javaAdapter;
         mKeyguardTransitionInteractor = keyguardTransitionInteractor;
         mUiModeManager = uiModeManager;
+        mTunerService = tunerService;
         dumpManager.registerDumpable(TAG, this);
     }
 
@@ -545,6 +562,12 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             return;
         }
 
+        mTunerService.addTunable(this, PREF_CHROMA_FACTOR);
+        mTunerService.addTunable(this, PREF_LUMINANCE_FACTOR);
+        mTunerService.addTunable(this, PREF_TINT_BACKGROUND);
+        mTunerService.addTunable(this, PREF_ACCENT_COLOR);
+        mTunerService.addTunable(this, PREF_RICHER_COLORS);
+
         // Upon boot, make sure we have the most up to date colors
         Runnable updateColors = () -> {
             WallpaperColors systemColor = mWallpaperManager.getWallpaperColors(
@@ -598,6 +621,39 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                 }
             });
         }
+    }
+
+    @Override
+    public void onTuningChanged(String key, String newValue) {
+        switch (key) {
+            case PREF_CHROMA_FACTOR:
+                mChromaFactor =
+                        (float) TunerService.parseInteger(newValue, 100) / 100f;
+                reevaluateSystemTheme(true /* forceReload */);
+                break;
+            case PREF_LUMINANCE_FACTOR:
+                mLuminanceFactor =
+                        (float) TunerService.parseInteger(newValue, 100) / 100f;
+                reevaluateSystemTheme(true /* forceReload */);
+                break;
+            case PREF_TINT_BACKGROUND:
+                mTintBackground =
+                        TunerService.parseIntegerSwitch(newValue, false);
+                reevaluateSystemTheme(true /* forceReload */);
+                break;
+            case PREF_ACCENT_COLOR:
+                mAccentColor =
+                        TunerService.parseInteger(newValue, 0);
+                reevaluateSystemTheme(true /* forceReload */);
+                break;
+            case PREF_RICHER_COLORS:
+                mRicherColors =
+                        TunerService.parseIntegerSwitch(newValue, false);
+                reevaluateSystemTheme(true /* forceReload */);
+                break;
+            default:
+                break;
+         }
     }
 
     private void reevaluateSystemTheme(boolean forceReload) {
@@ -683,14 +739,20 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
 
     private void createOverlays(int color) {
         boolean nightMode = isNightMode();
-        mColorScheme = new ColorScheme(color, nightMode, mThemeStyle);
+        boolean customColor = mAccentColor != 0;
+        mColorScheme = new ColorScheme(color, nightMode,
+                    (customColor || mRicherColors) ? Style.TONAL_SPOT : mThemeStyle,
+                    mRicherColors ? 0.75f : mLuminanceFactor,
+                    mRicherColors ? 1.5f : mChromaFactor,
+                    mTintBackground,
+                    customColor ? mAccentColor : null);
         mNeutralOverlay = createNeutralOverlay();
         mSecondaryOverlay = createAccentOverlay();
 
         mDynamicSchemeDark = dynamicSchemeFromStyle(
-                mThemeStyle, color, true /* isDark */, mContrast);
+                mThemeStyle, customColor ? mAccentColor : color, true /* isDark */, mContrast);
         mDynamicSchemeLight = dynamicSchemeFromStyle(
-                mThemeStyle, color, false /* isDark */, mContrast);
+                mThemeStyle, customColor ? mAccentColor : color, false /* isDark */, mContrast);
         mDynamicOverlay = createDynamicOverlay();
     }
 
@@ -706,7 +768,50 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         assignTonalPaletteToOverlay("accent1", overlay, mColorScheme.getAccent1());
         assignTonalPaletteToOverlay("accent2", overlay, mColorScheme.getAccent2());
         assignTonalPaletteToOverlay("accent3", overlay, mColorScheme.getAccent3());
+        adjustSystemResourceColors(overlay, mColorScheme);
         return overlay;
+    }
+
+    private void adjustSystemResourceColors(FabricatedOverlay overlay, ColorScheme colorScheme) {
+        String prefix = "android:color/";
+        TonalPalette accent1 = mColorScheme.getAccent1();
+        TonalPalette accent2 = mColorScheme.getAccent2();
+        TonalPalette accent3 = mColorScheme.getAccent3();
+
+        // If "richer colors" option is enabled, adjust the system primary, secondary, and tertiary accent colors
+        // to use shades that make colors a little deeper.
+
+        if (mRicherColors) {
+            setResourceColor(overlay, prefix + "accent_device_default_dark", accent1.getS300());
+            setResourceColor(overlay, prefix + "accent_primary_device_default", accent1.getS300());
+            setResourceColor(overlay, prefix + "accent_primary_variant_dark_device_default", accent1.getS400());
+            setResourceColor(overlay, prefix + "accent_device_default_light", accent1.getS500());
+            setResourceColor(overlay, prefix + "accent_primary_variant_light_device_default", accent1.getS500());
+
+            setResourceColor(overlay, prefix + "accent_secondary_device_default", accent2.getS300());
+            setResourceColor(overlay, prefix + "accent_secondary_variant_dark_device_default", accent2.getS400());
+            setResourceColor(overlay, prefix + "accent_secondary_variant_light_device_default", accent2.getS500());
+
+            setResourceColor(overlay, prefix + "accent_tertiary_device_default", accent3.getS300());
+            setResourceColor(overlay, prefix + "accent_tertiary_variant_dark_device_default", accent3.getS400());
+            setResourceColor(overlay, prefix + "accent_tertiary_variant_light_device_default", accent3.getS500());
+        }
+
+        // The "holo blue" colors are rarely used (mostly by older apps), but for those apps that do use them,
+        // let's change them to use shades of the accent color instead of the hardcoded colors. While we're at it,
+        // let's do the same with the "material deep teal" colors for the same reason.
+
+        setResourceColor(overlay, prefix + "holo_blue_bright", mRicherColors ? accent1.getS200() : accent1.getS100());
+        setResourceColor(overlay, prefix + "holo_blue_light", mRicherColors ? accent1.getS300() : accent1.getS200());
+        setResourceColor(overlay, prefix + "holo_blue_dark", accent1.getS500());
+
+        setResourceColor(overlay, prefix + "material_deep_teal_200", mRicherColors ? accent1.getS300() : accent1.getS200());
+        setResourceColor(overlay, prefix + "material_deep_teal_500", accent1.getS500());
+    }
+
+    private void setResourceColor(FabricatedOverlay overlay, String resourceName, int colorValue) {
+        overlay.setResourceValue(resourceName, TYPE_INT_COLOR_ARGB8, ColorUtils.setAlphaComponent(colorValue, 0xFF),
+                null);
     }
 
     private void assignTonalPaletteToOverlay(String name, FabricatedOverlay overlay,
