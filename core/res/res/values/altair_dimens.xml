@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2016-2026 crDroid Android Project
+     SPDX-FileCopyrightText: 2025-2026 Altair ROM Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+
+    <!-- Default line spacing multiplier between hours and minutes of the keyguard clock -->
+    <item name="keyguard_clock_line_spacing_scale" type="dimen" format="float">.7</item>
+</resources>
