@@ -77,4 +77,7 @@
     <!-- App version -->
     <java-symbol type="string" name="old_version_number" />
     <java-symbol type="string" name="new_version_number" />
+
+    <!-- Default line spacing multiplier between hours and minutes of the keyguard clock-->
+    <java-symbol type="dimen" format="float" name="keyguard_clock_line_spacing_scale" />
 </resources>
