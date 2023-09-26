@@ -287,10 +287,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             "lineagesystem:" + LineageSettings.System.FORCE_SHOW_NAVBAR;
     private static final String QS_TRANSPARENCY =
             "system:" + Settings.System.QS_TRANSPARENCY;
-    private static final String LESS_BORING_HEADS_UP =
-            "system:" + Settings.System.LESS_BORING_HEADS_UP;
-    private static final String RETICKER_STATUS =
-            "system:" + Settings.System.RETICKER_STATUS;
 
     private static final String BANNER_ACTION_CANCEL =
             "com.android.systemui.statusbar.banner_action_cancel";
@@ -950,8 +946,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
 
         mTunerService.addTunable(this, FORCE_SHOW_NAVBAR);
         mTunerService.addTunable(this, QS_TRANSPARENCY);
-        mTunerService.addTunable(this, LESS_BORING_HEADS_UP);
-        mTunerService.addTunable(this, RETICKER_STATUS);
 
         mWindowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
 
@@ -4230,16 +4224,6 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces, Tune
             case QS_TRANSPARENCY:
                 mScrimController.setCustomScrimAlpha(
                         TunerService.parseInteger(newValue, 100));
-                break;
-            case LESS_BORING_HEADS_UP:
-                boolean lessBoringHeadsUp =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                mNotificationInterruptStateProvider.setUseLessBoringHeadsUp(lessBoringHeadsUp);
-                break;
-            case RETICKER_STATUS:
-                boolean reTicker =
-                        TunerService.parseIntegerSwitch(newValue, false);
-                mNotificationInterruptStateProvider.setUseReticker(reTicker);
                 break;
             default:
                 break;
