@@ -4575,8 +4575,9 @@ public final class NotificationPanelViewController implements Dumpable {
         public void onTuningChanged(String key, String newValue) {
             switch (key) {
                 case DOUBLE_TAP_SLEEP_GESTURE:
-                    mDoubleTapToSleepEnabled =
-                            TunerService.parseIntegerSwitch(newValue, true);
+                    mDoubleTapToSleepEnabled = TunerService.parseIntegerSwitch(newValue,
+                            mResources.getBoolean(org.lineageos.platform.internal.R.bool.
+                                    config_dt2sGestureEnabledByDefault));
                     break;
                 case DOUBLE_TAP_SLEEP_LOCKSCREEN:
                     mIsLockscreenDoubleTapEnabled =
@@ -5234,7 +5235,7 @@ public final class NotificationPanelViewController implements Dumpable {
         /** Called when the shade starts opening. */
         void onOpenStarted();
     }
-    
+
     /* reTicker */
 
     public void reTickerView(boolean visibility) {
