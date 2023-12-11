@@ -391,8 +391,11 @@ public class InternetDialog extends SystemUIDialog implements
             }
         });
         mMobileNetworkLayout.setOnLongClickListener(v -> {
-                mInternetDialogController.launchMobileNetworkSetting(v);
+            if (!mInternetDialogController.isDeviceLocked()) {
+                mInternetDialogController.launchMobileNetworkSettings(v, mDefaultDataSubId);
                 return true;
+            }
+            return false;
         });
         mMobileDataToggle.setOnCheckedChangeListener(
                 (buttonView, isChecked) -> {
