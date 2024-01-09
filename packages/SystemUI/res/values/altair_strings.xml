@@ -102,4 +102,7 @@
     <string name="quick_settings_audio_mode">Audio mode</string>
     <string name="quick_settings_audio_mode_mono">Mono</string>
     <string name="quick_settings_audio_mode_stereo">Stereo</string>
+
+    <!-- AI Assistant affordance [CHAR LIMIT=32] -->
+    <string name="accessibility_assistant_button">AI Assistant</string>
 </resources>
