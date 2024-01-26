@@ -261,8 +261,10 @@ public class Clock extends TextView implements
 
         // Make sure we update to the current time
         updateShowSeconds();
-        updateClock();
-        updateClockVisibility();
+        mContext.getMainExecutor().execute(() -> {
+            updateClock();
+            updateClockVisibility();
+        });
     }
 
     @Override
@@ -466,6 +468,13 @@ public class Clock extends TextView implements
             default:
                 break;
         }
+        // Force refresh of dependent variables.
+        mContentDescriptionFormatString = "";
+        mDateTimePatternGenerator = null;
+        mContext.getMainExecutor().execute(() -> {
+            updateClock(true);
+            updateClockVisibility();
+        });
     }
 
     @Override
