@@ -8,4 +8,7 @@
 
     <!-- Power Menu Lite-->
     <dimen name="global_actions_light_icon_padding">32dp</dimen>
+
+    <!-- HD calling icon -->
+    <dimen name="signal_icon_viewport_size">24dp</dimen>
 </resources>
