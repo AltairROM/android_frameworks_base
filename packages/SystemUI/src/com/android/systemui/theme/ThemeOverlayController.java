@@ -779,9 +779,9 @@ public class ThemeOverlayController implements CoreStartable, Dumpable, TunerSer
         mSecondaryOverlay = createAccentOverlay();
 
         mDynamicSchemeDark = dynamicSchemeFromStyle(
-                mThemeStyle, color, true /* isDark */, mContrast);
+                mThemeStyle, customColor ? mAccentColor : color, true /* isDark */, mContrast);
         mDynamicSchemeLight = dynamicSchemeFromStyle(
-                mThemeStyle, color, false /* isDark */, mContrast);
+                mThemeStyle, customColor ? mAccentColor : color, false /* isDark */, mContrast);
         mDynamicOverlay = createDynamicOverlay();
     }
 
