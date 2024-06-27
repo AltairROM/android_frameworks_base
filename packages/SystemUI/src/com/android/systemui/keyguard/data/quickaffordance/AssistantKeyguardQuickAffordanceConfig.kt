@@ -31,7 +31,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-import com.android.internal.util.crdroid.Utils
+import com.android.internal.util.custom.Utils
 
 @SysUISingleton
 class AssistantKeyguardQuickAffordanceConfig
@@ -71,7 +71,7 @@ constructor(
     override fun onTriggered(
         expandable: Expandable?,
     ): KeyguardQuickAffordanceConfig.OnTriggeredResult {
-        val intent = Intent().setClassName("com.openai.chatgpt", "com.openai.voice.VoiceModeActivity")
+        val intent = Intent().setClassName("com.openai.chatgpt", "com.openai.voice.assistant.AssistantActivity")
         return KeyguardQuickAffordanceConfig.OnTriggeredResult.StartActivity(
             intent = intent,
             canShowWhileLocked = true,
