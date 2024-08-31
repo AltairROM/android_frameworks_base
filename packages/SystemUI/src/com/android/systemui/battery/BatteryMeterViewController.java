@@ -102,6 +102,13 @@ public class BatteryMeterViewController extends ViewController<BatteryMeterView>
                 public void onIsOverheatedChanged(boolean isOverheated) {
                     mView.onIsOverheatedChanged(isOverheated);
                 }
+
+                @Override
+                public void onBatteryPresentChanged(boolean batteryPresent) {
+                    mView.setBatteryPresence(batteryPresent);
+                    mView.setVisibility(!batteryPresent || mBatteryHidden
+                            ? View.GONE : View.VISIBLE);
+                }
             };
 
     private final UserTracker.Callback mUserChangedCallback =
