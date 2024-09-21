@@ -17,6 +17,7 @@ package com.android.server.webkit;
 
 import static com.android.server.pm.ComputerEngine.isDebuggable;
 
+import android.app.AppGlobals;
 import android.annotation.Nullable;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -115,7 +116,7 @@ class WebViewUpdateServiceImpl2 {
 
         WebViewProviderInfo defaultProvider = null;
         for (WebViewProviderInfo provider : webviewProviders) {
-            if (provider.availableByDefault) {
+            if (provider.availableByDefault && isPackageAvailable(provider.packageName)) {
                 defaultProvider = provider;
                 break;
             }
@@ -184,6 +185,15 @@ class WebViewUpdateServiceImpl2 {
         }
     }
 
+    private static boolean isPackageAvailable(String packageName) {
+        try {
+            AppGlobals.getInitialApplication().getPackageManager().getPackageInfo(packageName, 0);
+            return true;
+        } catch (NameNotFoundException e) {
+            return false;
+        }
+    }
+
     private boolean shouldTriggerRepairLocked() {
         if (mAttemptedToRepairBefore) {
             return false;
@@ -210,12 +220,19 @@ class WebViewUpdateServiceImpl2 {
             }
             mAttemptedToRepairBefore = true;
         }
-        Slog.w(
-                TAG,
-                "No provider available for all users, trying to install and enable "
-                        + mDefaultProvider.packageName);
-        mSystemInterface.installExistingPackageForAllUsers(mDefaultProvider.packageName);
-        mSystemInterface.enablePackageForAllUsers(mDefaultProvider.packageName, true);
+        WebViewProviderInfo[] webviewProviders = mSystemInterface.getWebViewPackages();
+        WebViewProviderInfo fallbackProvider = getFallbackProvider(webviewProviders);
+        if (fallbackProvider != null) {
+            Slog.w(TAG, "No valid provider, trying to install and enable "
+                    + fallbackProvider.packageName);
+            mSystemInterface.installExistingPackageForAllUsers(fallbackProvider.packageName);
+            mSystemInterface.enablePackageForAllUsers(fallbackProvider.packageName, true);
+        } else {
+            Slog.w(TAG, "No provider available for all users, trying to install and enable "
+                    + mDefaultProvider.packageName);
+            mSystemInterface.installExistingPackageForAllUsers(mDefaultProvider.packageName);
+            mSystemInterface.enablePackageForAllUsers(mDefaultProvider.packageName, true);
+        }
     }
 
     public void prepareWebViewInSystemServer() {
@@ -693,7 +710,7 @@ class WebViewUpdateServiceImpl2 {
      */
     private static WebViewProviderInfo getFallbackProvider(WebViewProviderInfo[] webviewPackages) {
         for (WebViewProviderInfo provider : webviewPackages) {
-            if (provider.isFallback) {
+            if (provider.isFallback && isPackageAvailable(provider.packageName)) {
                 return provider;
             }
         }
