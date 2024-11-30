@@ -1698,8 +1698,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    private void appSwitchPress() {
-        if (mAppSwitchPressAction != Action.NOTHING) {
+    private void appSwitchPress(int count) {
+        if (count == 1 && mAppSwitchPressAction != Action.NOTHING) {
             if (mAppSwitchPressAction != Action.APP_SWITCH) {
                 cancelPreloadRecentApps();
             }
@@ -1709,6 +1709,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     KeyEvent.FLAG_FROM_SYSTEM, InputDevice.SOURCE_KEYBOARD);
 
             performKeyAction(mAppSwitchPressAction, event);
+        } else if (count == 2 && mAppSwitchDoubleTapAction != Action.NOTHING) {
+            if (mAppSwitchDoubleTapAction != Action.APP_SWITCH) {
+                cancelPreloadRecentApps();
+            }
+            long now = SystemClock.uptimeMillis();
+            KeyEvent event = new KeyEvent(now, now, KeyEvent.ACTION_DOWN,
+                    KeyEvent.KEYCODE_APP_SWITCH, 0, 0, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                    KeyEvent.FLAG_FROM_SYSTEM, InputDevice.SOURCE_KEYBOARD);
+
+            performKeyAction(mAppSwitchDoubleTapAction, event);
         }
     }
 
@@ -3132,12 +3142,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         @Override
         int getMaxMultiPressCount() {
-            return 1;
+            return mAppSwitchDoubleTapAction != Action.NOTHING ? 2 : 1;
         }
 
         @Override
-        void onPress(long downTime, int unusedDisplayId) {
-            appSwitchPress();
+        void onPress(long downTime, int displayId) {
+            appSwitchPress(1 /*count*/);
+        }
+
+        @Override
+        void onMultiPress(long downTime, int count, int displayId) {
+            appSwitchPress(count);
         }
 
         @Override
@@ -6034,7 +6049,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (!keyguardOn()) {
                     if (down) {
                         if (mAppSwitchPressAction == Action.APP_SWITCH
-                                || mAppSwitchLongPressAction == Action.APP_SWITCH) {
+                                || mAppSwitchLongPressAction == Action.APP_SWITCH
+                                || mAppSwitchDoubleTapAction == Action.APP_SWITCH) {
                             preloadRecentApps();
                         }
                     }
