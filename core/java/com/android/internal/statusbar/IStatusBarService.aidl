@@ -246,4 +246,6 @@ interface IStatusBarService
      * Toggle recent apps.
      */
     void toggleRecentApps();
+
+    void restartSystemUI();
 }
