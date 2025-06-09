@@ -3794,6 +3794,11 @@
   <java-symbol type="string" name="config_signalAttributionPath" />
   <java-symbol type="dimen" name="config_signalCutoutWidthFraction" />
   <java-symbol type="dimen" name="config_signalCutoutHeightFraction" />
+  <java-symbol type="string" name="config_batterymeterTwoTonePerimeterPath" />
+  <java-symbol type="string" name="config_batterymeterTwoToneErrorPerimeterPath" />
+  <java-symbol type="string" name="config_batterymeterTwoToneFillMask" />
+  <java-symbol type="string" name="config_batterymeterTwoToneBoltPath" />
+  <java-symbol type="string" name="config_batterymeterTwoTonePowersavePath" />
 
   <java-symbol type="bool" name="config_debugEnableAutomaticSystemServerHeapDumps" />
   <java-symbol type="integer" name="config_debugSystemServerPssThresholdBytes" />
