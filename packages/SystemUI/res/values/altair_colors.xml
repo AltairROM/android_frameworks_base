@@ -8,4 +8,7 @@
 
     <!-- Notification counter -->
     <color name="notification_number_text_color">#ff000000</color>
+
+    <!-- Sliding QS Tile -->
+    <color name="tile_percentage_color">@*android:color/system_accent1_200</color>
 </resources>
