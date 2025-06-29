@@ -40,6 +40,8 @@ import com.android.systemui.plugins.qs.QSTileView;
 import com.android.systemui.qs.customize.QSCustomizerController;
 import com.android.systemui.qs.external.CustomTile;
 import com.android.systemui.qs.logging.QSLogger;
+import com.android.systemui.qs.tileimpl.SliderQSTileViewImpl;
+import com.android.systemui.qs.tileimpl.SlideableQSTile;
 import com.android.systemui.qs.tileimpl.QSTileViewImpl;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
@@ -391,7 +393,8 @@ public abstract class QSPanelControllerBase<T extends QSPanel> extends ViewContr
         } else {
             longPressEffect = null;
         }
-        final QSTileViewImpl tileView = new QSTileViewImpl(
+        final QSTileViewImpl tileView;
+        tileView = new QSTileViewImpl(
                 getContext(), collapsedView, longPressEffect);
         final TileRecord r = new TileRecord(tile, tileView);
         // TODO(b/250618218): Remove the QSLogger in QSTileViewImpl once we know the root cause of

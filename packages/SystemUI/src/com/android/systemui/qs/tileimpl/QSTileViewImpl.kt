@@ -244,7 +244,7 @@ constructor(
     private lateinit var qsTileBackground: RippleDrawable
     private lateinit var qsTileFocusBackground: Drawable
     private lateinit var backgroundDrawable: LayerDrawable
-    private lateinit var backgroundBaseDrawable: Drawable
+    protected lateinit var backgroundBaseDrawable: Drawable
     private lateinit var backgroundOverlayDrawable: Drawable
 
     private var backgroundColor: Int = 0
@@ -345,7 +345,7 @@ constructor(
         }
 
         setColor(getBackgroundColorForState(QSTile.State.DEFAULT_STATE))
-        
+
         val iconSize = context.resources.getDimensionPixelSize(R.dimen.qs_icon_size)
 
         if (isA11Style) {
@@ -1001,7 +1001,7 @@ constructor(
             if (allowAnimations) {
                 if (isA11Style) {
                     shapeAnimator.setFloatValues(
-                        getCornerRadiusForState(lastState), 
+                        getCornerRadiusForState(lastState),
                         getCornerRadiusForState(state.state)
                     )
                 }
@@ -1094,7 +1094,7 @@ constructor(
         setOverlayColor(overlayColor)
     }
 
-    private fun setColor(color: Int) {
+    protected fun setColor(color: Int) {
         backgroundBaseDrawable.mutate().setTint(color)
         backgroundColor = color
     }
@@ -1166,18 +1166,18 @@ constructor(
         return locInScreen.get(1) >= -height
     }
 
-    private fun getBackgroundColorForState(state: Int, disabledByPolicy: Boolean = false): Int {
+    protected open fun getBackgroundColorForState(state: Int, disabledByPolicy: Boolean = false): Int {
         return when {
             state == Tile.STATE_UNAVAILABLE || disabledByPolicy -> colorUnavailable
-            state == Tile.STATE_ACTIVE -> 
-                if (qsPanelStyle == 2 || qsPanelStyle == 9) 
-                    colorActiveAlpha 
-                else if (qsPanelStyle == 3) 
-                    colorActiveRandom 
+            state == Tile.STATE_ACTIVE ->
+                if (qsPanelStyle == 2 || qsPanelStyle == 9)
+                    colorActiveAlpha
+                else if (qsPanelStyle == 3)
+                    colorActiveRandom
                 else colorActive
             state == Tile.STATE_INACTIVE ->
                 if (qsPanelStyle >= 1)
-                    colorInactiveAlpha 
+                    colorInactiveAlpha
                 else
                     colorInactive
             else -> {
@@ -1190,12 +1190,12 @@ constructor(
     private fun getLabelColorForState(state: Int, disabledByPolicy: Boolean = false): Int {
         return when {
             state == Tile.STATE_UNAVAILABLE || disabledByPolicy -> colorLabelUnavailable
-            state == Tile.STATE_ACTIVE -> 
+            state == Tile.STATE_ACTIVE ->
                 if (qsPanelStyle == 1 || qsPanelStyle == 2 || qsPanelStyle == 9)
                     colorActive
-                else if (qsPanelStyle == 3) 
+                else if (qsPanelStyle == 3)
                     colorLabelActiveRandom
-                else if (qsPanelStyle == 4 || qsPanelStyle == 6 || qsPanelStyle == 8 || qsPanelStyle == 9)   
+                else if (qsPanelStyle == 4 || qsPanelStyle == 6 || qsPanelStyle == 8 || qsPanelStyle == 9)
                     colorActiveSurround
                 else colorLabelActive
             state == Tile.STATE_INACTIVE -> colorLabelInactive
@@ -1209,12 +1209,12 @@ constructor(
     private fun getSecondaryLabelColorForState(state: Int, disabledByPolicy: Boolean = false): Int {
         return when {
             state == Tile.STATE_UNAVAILABLE || disabledByPolicy -> colorSecondaryLabelUnavailable
-            state == Tile.STATE_ACTIVE -> 
-                if(qsPanelStyle == 1 || qsPanelStyle == 2 || qsPanelStyle == 9) 
+            state == Tile.STATE_ACTIVE ->
+                if(qsPanelStyle == 1 || qsPanelStyle == 2 || qsPanelStyle == 9)
                     colorActive
-                else if(qsPanelStyle == 3) 
+                else if(qsPanelStyle == 3)
                     colorSecondaryLabelActiveRandom
-                else if(qsPanelStyle == 4 || qsPanelStyle == 6 || qsPanelStyle == 8 || qsPanelStyle == 9)   
+                else if(qsPanelStyle == 4 || qsPanelStyle == 6 || qsPanelStyle == 8 || qsPanelStyle == 9)
                     colorActiveSurround
                 else colorSecondaryLabelActive
             state == Tile.STATE_INACTIVE -> colorSecondaryLabelInactive
