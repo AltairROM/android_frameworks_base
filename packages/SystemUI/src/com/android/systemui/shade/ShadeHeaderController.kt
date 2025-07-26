@@ -163,7 +163,6 @@ constructor(
     private var cutout: DisplayCutout? = null
     private var lastInsets: WindowInsets? = null
     private var nextAlarmIntent: PendingIntent? = null
-    private var textColorPrimary = Color.TRANSPARENT
 
     private var qsDisabled = false
     private var visible = false
@@ -315,16 +314,32 @@ constructor(
             }
 
             override fun onUiModeChanged() {
-                updateResources()
+                updateIconManagerColors()
             }
 
             override fun onThemeChanged() {
-                clock.setTextAppearance(R.style.TextAppearance_QS_Status)
-                date.setTextAppearance(R.style.TextAppearance_QS_Status)
-                mShadeCarrierGroup.updateTextAppearance(R.style.TextAppearance_QS_Status_Carriers)
-                updateResources()
+                updateIconManagerColors()
             }
         }
+
+    private fun updateIconManagerColors() {
+        val fgColor =
+            Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorPrimary)
+        val bgColor =
+            Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorPrimaryInverse)
+
+        iconManager.setTint(fgColor, bgColor)
+
+        batteryIcon.updateColors(
+            fgColor /* foreground */,
+            bgColor /* background */,
+            fgColor, /* single tone (current default) */
+        )
+        clock.setTextAppearance(R.style.TextAppearance_QS_Status)
+        date.setTextAppearance(R.style.TextAppearance_QS_Status)
+        mShadeCarrierGroup.updateTextAppearance(R.style.TextAppearance_QS_Status_Carriers)
+        updateResources()
+    }
 
     private val nextAlarmCallback =
         NextAlarmController.NextAlarmChangeCallback { nextAlarm ->
@@ -333,7 +348,6 @@ constructor(
 
     fun updateQsBatteryStyle() {
         batteryIcon.setBatteryStyle(batteryStyle)
-        updateBatteryResources(true)
     }
 
     override fun onInit() {
@@ -343,19 +357,8 @@ constructor(
         // battery settings same as in QS icons
         batteryMeterViewController.ignoreTunerUpdates()
 
-        val fgColor =
-            Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorPrimary)
-        val bgColor =
-            Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorPrimaryInverse)
-
         iconManager = tintedIconManagerFactory.create(iconContainer, StatusBarLocation.QS)
-        iconManager.setTint(fgColor, bgColor)
-
-        batteryIcon.updateColors(
-            fgColor /* foreground */,
-            bgColor /* background */,
-            fgColor, /* single tone (current default) */
-        )
+        updateIconManagerColors()
 
         carrierIconSlots =
             listOf(header.context.getString(com.android.internal.R.string.status_bar_mobile))
@@ -603,31 +606,6 @@ constructor(
         val padding = resources.getDimensionPixelSize(R.dimen.qs_panel_padding)
         header.setPadding(padding, header.paddingTop, padding, header.paddingBottom)
         updateQQSPaddings()
-        updateBatteryResources(false)
-    }
-
-    private fun updateBatteryResources(forceUpdate: Boolean) {
-        val textColor = Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimary)
-        val colorStateList = Utils.getColorAttr(context, android.R.attr.textColorPrimary)
-        if (textColor != textColorPrimary || forceUpdate) {
-            var textColorSecondary = Utils.getColorAttrDefaultColor(context,
-                    android.R.attr.textColorSecondary)
-            val currentBatteryStyle = batteryIcon.getBatteryStyle()
-            if (currentBatteryStyle == BATTERY_STYLE_CIRCLE || currentBatteryStyle == BATTERY_STYLE_TEXT) {
-                textColorSecondary = Utils.getColorAttrDefaultColor(header.context, android.R.attr.textColorHint)
-            }
-            textColorPrimary = textColor
-            if (iconManager != null) {
-                iconManager.setTint(
-                    textColorPrimary,
-                    Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimaryInverse),
-                )
-            }
-            clock.setTextColor(textColorPrimary)
-            date.setTextColor(textColorPrimary)
-            mShadeCarrierGroup.updateColors(textColorPrimary, colorStateList)
-            batteryIcon.updateColors(textColorPrimary, textColorSecondary, textColorPrimary)
-        }
     }
 
     private fun updateQQSPaddings() {
