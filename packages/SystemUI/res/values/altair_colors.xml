@@ -11,4 +11,8 @@
 
     <!-- Sliding QS Tile -->
     <color name="tile_percentage_color">@*android:color/system_accent1_200</color>
+
+    <!-- for fallback only (dual tone) -->
+    <color name="nt_scrim_behind_1">@android:color/system_neutral1_100</color>
+    <color name="nt_scrim_behind_2">@android:color/system_neutral1_100</color>
 </resources>
