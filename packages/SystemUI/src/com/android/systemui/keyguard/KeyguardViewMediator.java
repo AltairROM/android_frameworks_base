@@ -1854,12 +1854,14 @@ public class KeyguardViewMediator implements CoreStartable,
         mUpdateMonitor.dispatchStartedGoingToSleep(offReason);
 
         // Prevent keyguard going away conflicts during lock operations
-        boolean isLockingOperation = mShowing || mKeyguardStateController.isKeyguardGoingAway() || mPendingLock;
+        boolean isLockingOperation = mShowing || mPendingLock;
 
-        // Only dispatch keyguard going away if:
-        // 1. UDFPS is not configured (original logic)
-        // 2. Not currently in a locking operation
-        if (!isUdfpsConfigured() || (!mUpdateMonitor.isUdfpsEnrolled() && !isLockingOperation)) {
+        // Reset keyguard going away state when going to sleep to prevent screen flickering.
+        // Only skip the reset if UDFPS is configured, enrolled, and we're in a locking operation
+        // to avoid interfering with fingerprint authentication during device lock.
+        boolean shouldSkipReset = isUdfpsConfigured() && mUpdateMonitor.isUdfpsEnrolled() && isLockingOperation;
+
+        if (!shouldSkipReset) {
             mKeyguardStateController.notifyKeyguardGoingAway(false);
             mUpdateMonitor.dispatchKeyguardGoingAway(false);
         }
