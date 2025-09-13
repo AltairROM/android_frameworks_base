@@ -255,4 +255,9 @@
     <string name="quick_settings_audio_mode">Audio mode</string>
     <string name="quick_settings_audio_mode_mono">Mono</string>
     <string name="quick_settings_audio_mode_stereo">Stereo</string>
+
+    <!-- Flashlight Strength -->
+    <string name="flashlight_strength_title">Flashlight Strength</string>
+    <string name="flashlight_strength_turn_off">Turn off</string>
+    <string name="flashlight_strength_turn_on">Turn on</string>
 </resources>
