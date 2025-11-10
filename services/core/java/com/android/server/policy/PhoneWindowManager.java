@@ -1808,7 +1808,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void appSwitchPress(int count) {
-        if (count == 1 && mAppSwitchPressAction != Action.NOTHING) {
+        if (count == 1 && mAppSwitchPressAction != Action.NOTHING && !keyguardOn()) {
             if (mAppSwitchPressAction != Action.APP_SWITCH) {
                 cancelPreloadRecentApps();
             }
@@ -1818,7 +1818,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     KeyEvent.FLAG_FROM_SYSTEM, InputDevice.SOURCE_KEYBOARD);
 
             performKeyAction(mAppSwitchPressAction, event);
-        } else if (count == 2 && mAppSwitchDoubleTapAction != Action.NOTHING) {
+        } else if (count == 2 && mAppSwitchDoubleTapAction != Action.NOTHING && !keyguardOn()) {
             if (mAppSwitchDoubleTapAction != Action.APP_SWITCH) {
                 cancelPreloadRecentApps();
             }
@@ -4772,7 +4772,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         List<Integer> supportedGestures = new ArrayList<>(List.of(
                 KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
-                KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT,
                 KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
@@ -4831,15 +4830,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS:
                 if (complete) {
                     showRecentApps(false);
-                }
-                break;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH:
-                if (!keyguardOn) {
-                    if (start) {
-                        preloadRecentApps();
-                    } else if (complete) {
-                        toggleRecentApps();
-                    }
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT:
