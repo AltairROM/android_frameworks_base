@@ -339,6 +339,9 @@ public class Clock extends TextView implements
                 });
             } else if (action.equals(Intent.ACTION_SCREEN_ON)) {
                 mScreenOn = true;
+                mContext.getMainExecutor().execute(() -> {
+                    updateClockVisibility();
+                });
             } else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
                 mScreenOn = false;
             }
@@ -454,6 +457,9 @@ public class Clock extends TextView implements
             default:
                 break;
         }
+        // Force refresh of dependent variables.
+        mContentDescriptionFormatString = "";
+        mDateTimePatternGenerator = null;
         mContext.getMainExecutor().execute(() -> {
             updateClock(true);
             updateClockVisibility();
