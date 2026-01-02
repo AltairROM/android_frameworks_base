@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: 2016-2026 crDroid Android Project
+     SPDX-FileCopyrightText: 2025-2026 Altair ROM Project
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+
+    <!-- Smartspace -->
+    <attr format="dimension" name="remoteViewsCardCornerRadius" />
+    <attr format="dimension" name="smartspaceSubtitleTextSize" />
+    <attr format="dimension" name="smartspaceTitleTextSize" />
+    <declare-styleable
+        name="WeatherSmartspaceView">
+        <attr format="dimension" name="iconInset" />
+        <attr format="dimension" name="iconSize" />
+        <attr format="boolean" name="removeTextDescent" />
+        <attr format="dimension" name="textDescentExtraPadding" />
+    </declare-styleable>
+</resources>
