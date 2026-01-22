@@ -961,9 +961,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
         }
-        if (mIsBlurSupported) {
-            updateColors();
-        }
+        updateIfNeeded();
     }
 
     /**
@@ -1045,9 +1043,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public void markHeadsUpSeen() {
         super.markHeadsUpSeen();
         mMustStayOnScreen = false;
-        if (mIsBlurSupported) {
-            updateColors();
-        }
+        updateIfNeeded();
     }
 
     /**
@@ -1314,9 +1310,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             setUserExpanded(true);
         }
 
-        if (mIsBlurSupported) {
-            updateColors();
-        }
+        updateIfNeeded();
         setChronometerRunning(mLastChronometerRunning);
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
@@ -1686,7 +1680,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Override
     protected void setBackgroundTintColor(int color) {
-        if (mIsBlurSupported) {
+        if (usesTransparentBackground()) {
             boolean isColorized = false;
             if (mEntryAdapter != null) {
                 isColorized = mEntryAdapter.isColorized();
@@ -1709,13 +1703,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         NotificationContentView view = getShowingLayout();
         if (view != null) {
             view.setBackgroundTintColor(color);
-        }
-    }
-
-    /** Refreshes row colors when translucency setting changes. */
-    public void updateIfNeeded() {
-        if (mIsBlurSupported) {
-            updateColors();
         }
     }
 
@@ -1878,9 +1865,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
         }
-        if (mIsBlurSupported) {
-            updateColors();
-        }
+        updateIfNeeded();
     }
 
     public void setHeadsUpAnimatingAwayListener(Consumer<Boolean> listener) {
@@ -3146,6 +3131,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 mChildrenContainer.setOnKeyguard(onKeyguard);
             }
         }
+        updateIfNeeded();
     }
 
     @Override
@@ -3732,6 +3718,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             mChildrenContainer.setAlpha(1f);
             mChildrenContainer.setLayerType(LAYER_TYPE_NONE, null);
         }
+        updateIfNeeded();
     }
 
     /**
