@@ -445,6 +445,9 @@ public class EdgeBackGestureHandler implements TunerService.Tunable {
                 mTrackpadsConnected.remove(deviceId);
                 if (mTrackpadsConnected.isEmpty()) {
                     update();
+                    if (mStateChangeCallback != null) {
+                        mStateChangeCallback.run();
+                    }
                 }
             });
         }
