@@ -346,7 +346,7 @@ constructor(
                         LineageSettings.System.getIntForUser(
                             resolver,
                             LineageSettings.System.STATUS_BAR_SHOW_BATTERY_PERCENT,
-                            BatteryRepository.SHOW_PERCENT_HIDDEN,
+                            BatteryRepository.SHOW_PERCENT_INSIDE,
                             UserHandle.USER_CURRENT,
                         )
                     }
@@ -378,12 +378,12 @@ constructor(
             .logDiffsForTable(
                 tableLogBuffer = tableLog,
                 columnName = COL_SHOW_PERCENT_SETTING,
-                initialValue = BatteryRepository.SHOW_PERCENT_HIDDEN,
+                initialValue = BatteryRepository.SHOW_PERCENT_INSIDE,
             )
             .stateIn(
                 scope = scope,
                 started = SharingStarted.Lazily,
-                initialValue = BatteryRepository.SHOW_PERCENT_HIDDEN,
+                initialValue = BatteryRepository.SHOW_PERCENT_INSIDE,
             )
 
     /** Get and re-fetch the estimate every 2 minutes while active */
