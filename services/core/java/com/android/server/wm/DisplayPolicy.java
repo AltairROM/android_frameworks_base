@@ -138,7 +138,6 @@ import com.android.internal.policy.ForceShowNavBarSettingsObserver;
 import com.android.internal.policy.GestureNavigationSettingsObserver;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.statusbar.LetterboxDetails;
-import com.android.internal.util.custom.Utils;
 import com.android.internal.util.function.TriFunction;
 import com.android.internal.view.AppearanceRegion;
 import com.android.internal.widget.PointerLocationView;
@@ -257,6 +256,7 @@ public class DisplayPolicy {
 
     private volatile boolean mHasStatusBar;
     private volatile boolean mHasNavigationBar;
+    private volatile boolean mForceNavbar;
     private volatile boolean mTaskBarEnabled;
     // Can the navigation bar ever move to the side?
     private volatile boolean mNavigationBarCanMove;
@@ -705,10 +705,19 @@ public class DisplayPolicy {
 
         if (mDisplayContent.isDefaultDisplay) {
             mHasStatusBar = true;
+            mHasNavigationBar = mContext.getResources().getBoolean(R.bool.config_showNavigationBar);
+
+            // Allow a system property to override this. Used by the emulator.
+            // See also hasNavigationBar().
+            String navBarOverride = SystemProperties.get("qemu.hw.mainkeys");
+            if ("1".equals(navBarOverride)) {
+                mHasNavigationBar = false;
+            } else if ("0".equals(navBarOverride)) {
+                mHasNavigationBar = true;
+            }
 
             // Register content observer only for main display
             mSettingsObserver = new SettingsObserver(mHandler);
-            updateSettings();
         } else {
             mHasStatusBar = false;
             mHasNavigationBar = mDisplayContent.isSystemDecorationsSupported();
@@ -758,14 +767,14 @@ public class DisplayPolicy {
     public void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
 
-        mHasNavigationBar = LineageSettings.System.getIntForUser(resolver,
-                LineageSettings.System.FORCE_SHOW_NAVBAR, Utils.hasNavbarByDefault(mContext) ? 1 : 0,
-                UserHandle.USER_CURRENT) != 0;
+        mForceNavbar = LineageSettings.System.getIntForUser(resolver,
+                LineageSettings.System.FORCE_SHOW_NAVBAR, 0,
+                UserHandle.USER_CURRENT) == 1;
         mTaskBarEnabled = LineageSettings.System.getIntForUser(resolver,
                 LineageSettings.System.ENABLE_TASKBAR, isTablet() ? 1 : 0,
                 UserHandle.USER_CURRENT) != 0;
     }
-
+    
     private boolean isTablet() {
         return getCurrentUserResources().getConfiguration().smallestScreenWidthDp >= 600;
     }
@@ -818,7 +827,7 @@ public class DisplayPolicy {
     }
 
     public boolean hasNavigationBar() {
-        return mHasNavigationBar;
+        return mHasNavigationBar || mForceNavbar;
     }
 
     void updateHasNavigationBarIfNeeded() {
@@ -1921,7 +1930,7 @@ public class DisplayPolicy {
                 R.bool.config_remoteInsetsControllerControlsSystemBars);
 
         updateConfigurationAndScreenSizeDependentBehaviors();
-
+        
         final boolean isMobileTaskbarEnabled = !isTablet() && mTaskBarEnabled;
 
         final boolean shouldAttach =
