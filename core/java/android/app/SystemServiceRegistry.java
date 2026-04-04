@@ -1313,7 +1313,10 @@ public final class SystemServiceRegistry {
                 new StaticServiceFetcher<PersistentDataBlockManager>() {
             @Override
             public PersistentDataBlockManager createService() throws ServiceNotFoundException {
-                IBinder b = ServiceManager.getServiceOrThrow(Context.PERSISTENT_DATA_BLOCK_SERVICE);
+                IBinder b = ServiceManager.getService(Context.PERSISTENT_DATA_BLOCK_SERVICE);
+                if (b == null) {
+                    return null;
+                }
                 IPersistentDataBlockService persistentDataBlockService =
                         IPersistentDataBlockService.Stub.asInterface(b);
                 if (persistentDataBlockService != null) {
@@ -1329,7 +1332,10 @@ public final class SystemServiceRegistry {
                 new StaticServiceFetcher<OemLockManager>() {
             @Override
             public OemLockManager createService() throws ServiceNotFoundException {
-                IBinder b = ServiceManager.getServiceOrThrow(Context.OEM_LOCK_SERVICE);
+                IBinder b = ServiceManager.getService(Context.OEM_LOCK_SERVICE);
+                if (b == null) {
+                    return null;
+                }
                 IOemLockService oemLockService = IOemLockService.Stub.asInterface(b);
                 if (oemLockService != null) {
                     return new OemLockManager(oemLockService);
@@ -2322,6 +2328,8 @@ public final class SystemServiceRegistry {
                 case Context.CONTEXTHUB_SERVICE:
                 case Context.VIRTUALIZATION_SERVICE:
                 case Context.VIRTUAL_DEVICE_SERVICE:
+                case Context.PERSISTENT_DATA_BLOCK_SERVICE:
+                case Context.OEM_LOCK_SERVICE:
                     return null;
                 case Context.DROPBOX_SERVICE:
                     // If the Dropbox service is missing, we don't want to trigger a WTF, because
