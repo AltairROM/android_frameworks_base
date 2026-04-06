@@ -31,10 +31,10 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object ThemeIconController {
 
-    private const val NEW_SIGNAL_WIDTH_DP = 17f
-    private const val NEW_SIGNAL_HEIGHT_DP = 12f
-    private const val NEW_WIFI_WIDTH_DP = 17f
-    private const val NEW_WIFI_HEIGHT_DP = 12.58f
+    private const val NEW_SIGNAL_WIDTH_DP = 24f
+    private const val NEW_SIGNAL_HEIGHT_DP = 24f
+    private const val NEW_WIFI_WIDTH_DP = 24f
+    private const val NEW_WIFI_HEIGHT_DP = 24f
 
     private val SIGNAL_4BAR_NAMES = arrayOf(
         "ic_signal_cellular_0_4_bar",
