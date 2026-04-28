@@ -34,8 +34,11 @@ private const val UNSET = -1
 private val HIDDEN_VIEW_IDS = listOf(
     R.id.shared_notification_container,
     R.id.notificationShelf,
+    R.id.bc_smartspace_view,
+    R.id.smartspace_card_pager,
+    R.id.smartspace_page_indicator,
+    R.id.keyguard_slice_view,
 )
-
 
 private fun Float.dpToPx(context: Context): Int =
     (this * context.resources.displayMetrics.density + 0.5f).toInt()
