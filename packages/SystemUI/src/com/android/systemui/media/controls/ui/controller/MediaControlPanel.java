@@ -99,6 +99,7 @@ import com.android.systemui.media.controls.ui.animation.MetadataAnimationHandler
 import com.android.systemui.media.controls.ui.binder.SeekBarObserver;
 import com.android.systemui.media.controls.ui.view.GutsViewHolder;
 import com.android.systemui.media.controls.ui.view.MediaViewHolder;
+import com.android.systemui.media.controls.ui.view.WaveformSeekBar;
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel;
 import com.android.systemui.media.controls.util.MediaDataUtils;
 import com.android.systemui.media.controls.util.MediaUiEventLogger;
@@ -342,6 +343,23 @@ public class MediaControlPanel {
     @Nullable
     public MediaViewHolder getMediaViewHolder() {
         return mMediaViewHolder;
+    }
+
+    public void refreshSeekBarTheme() {
+        if (mMediaViewHolder != null && mMediaViewHolder.getSeekBar() instanceof WaveformSeekBar) {
+            WaveformSeekBar seekBar = (WaveformSeekBar) mMediaViewHolder.getSeekBar();
+            seekBar.refreshTheme();
+            updateWaveformSeekBarColor();
+        }
+    }
+
+    private void updateWaveformSeekBarColor() {
+        if (mColorSchemeTransition != null
+                && mMediaViewHolder != null
+                && mMediaViewHolder.getSeekBar() instanceof WaveformSeekBar) {
+            ((WaveformSeekBar) mMediaViewHolder.getSeekBar()).setMediaColor(
+                    mColorSchemeTransition.getSurfaceEffectColor());
+        }
     }
 
     /**
@@ -944,6 +962,8 @@ public class MediaControlPanel {
                 // Transition Colors to current color scheme
                 boolean colorSchemeChanged;
                 colorSchemeChanged = mColorSchemeTransition.updateColorScheme(colorScheme);
+
+                updateWaveformSeekBarColor();
 
                 // Bind the album view to the artwork or a transition drawable
                 ImageView albumView = mMediaViewHolder.getAlbumView();
@@ -1581,19 +1601,19 @@ public class MediaControlPanel {
     }
 
     /**
-      * Here is to solve the problem that the panel title and artist are not syncing in time 
+      * Here is to solve the problem that the panel title and artist are not syncing in time
       * @author alphi-wang-cn
-      */ 
-     private final MediaController.Callback mCb = new MediaController.Callback() { 
-         @Override 
-         public void onMetadataChanged(MediaMetadata metadata) { 
-            if (metadata != null) { 
-                 String title = metadata.getString(MediaMetadata.METADATA_KEY_TITLE); 
-                 String artist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST); 
-                 mMediaViewHolder.getTitleText().setText(title); 
-                 mMediaViewHolder.getArtistText().setText(artist); 
-                 mMediaViewController.refreshState();        // measure view and refresh the state 
+      */
+     private final MediaController.Callback mCb = new MediaController.Callback() {
+         @Override
+         public void onMetadataChanged(MediaMetadata metadata) {
+            if (metadata != null) {
+                 String title = metadata.getString(MediaMetadata.METADATA_KEY_TITLE);
+                 String artist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST);
+                 mMediaViewHolder.getTitleText().setText(title);
+                 mMediaViewHolder.getArtistText().setText(artist);
+                 mMediaViewController.refreshState();        // measure view and refresh the state
             }
-         } 
+         }
      };
 }
