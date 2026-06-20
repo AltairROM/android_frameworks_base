@@ -31,11 +31,6 @@ import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_DY
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_SYSTEM_PALETTE;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_THEME_STYLE;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_BOTH;
-import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_LUMINANCE_FACTOR;
-import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CHROMA_FACTOR;
-import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_RICHER_COLORS;
-import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_WHOLE_PALETTE;
-import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_TINT_BACKGROUND;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_INDEX;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_SOURCE;
 import static com.android.systemui.theme.ThemeOverlayApplier.TIMESTAMP_FIELD;
@@ -717,21 +712,11 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     }
 
     private void createOverlays(int color) {
-        final float luminanceFactor = fetchFloatValueFromSetting(OVERLAY_LUMINANCE_FACTOR);
-        final float chromaFactor = fetchFloatValueFromSetting(OVERLAY_CHROMA_FACTOR);
-        final boolean richerColors = fetchBooleanValueFromSetting(OVERLAY_RICHER_COLORS);
-        final boolean wholePalette = fetchBooleanValueFromSetting(OVERLAY_WHOLE_PALETTE);
-        final boolean tintBackground = fetchBooleanValueFromSetting(OVERLAY_TINT_BACKGROUND);
-        final int themeStyle = richerColors ? ThemeStyle.TONAL_SPOT : mThemeStyle;
-        mDarkColorScheme = new ColorScheme(color, true /* isDark */, themeStyle, mContrast,
-                richerColors ? 0.75f : luminanceFactor, richerColors ? 1.5f : chromaFactor,
-                wholePalette, tintBackground);
-        mLightColorScheme = new ColorScheme(color, false /* isDark */, themeStyle, mContrast,
-                richerColors ? 0.75f : luminanceFactor, richerColors ? 1.5f : chromaFactor,
-                wholePalette, tintBackground);
+        mDarkColorScheme = new ColorScheme(color, true /* isDark */, mThemeStyle, mContrast);
+        mLightColorScheme = new ColorScheme(color, false /* isDark */, mThemeStyle, mContrast);
         mColorScheme = isNightMode() ? mDarkColorScheme : mLightColorScheme;
 
-        mAccentOverlay = createAccentOverlay(richerColors);
+        mAccentOverlay = createAccentOverlay();
 
         mNeutralOverlay = newFabricatedOverlay("neutral");
         assignColorsToOverlay(mNeutralOverlay, DynamicColors.getAllNeutralPalette(), false);
@@ -763,47 +748,44 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         });
     }
 
-    protected FabricatedOverlay createAccentOverlay(boolean richerColors) {
+    protected FabricatedOverlay createAccentOverlay() {
         FabricatedOverlay overlay = newFabricatedOverlay("accent");
         assignColorsToOverlay(overlay, DynamicColors.getAllAccentPalette(), false);
-        adjustSystemResourceColors(overlay, mColorScheme, richerColors);
+        adjustSystemResourceColors(overlay, mColorScheme);
         return overlay;
     }
 
-    private void adjustSystemResourceColors(FabricatedOverlay overlay, ColorScheme colorScheme,
-            boolean richerColors) {
+    private void adjustSystemResourceColors(FabricatedOverlay overlay, ColorScheme colorScheme) {
         String prefix = "android:color/";
         TonalPalette accent1 = mColorScheme.getAccent1();
         TonalPalette accent2 = mColorScheme.getAccent2();
         TonalPalette accent3 = mColorScheme.getAccent3();
 
-        // If "richer colors" option is enabled, adjust the system primary, secondary, and tertiary accent colors
+        // Adjust the system primary, secondary, and tertiary accent colors
         // to use shades that make colors a little deeper.
 
-        if (richerColors) {
-            setResourceColor(overlay, prefix + "accent_device_default_light", accent1.getS500());
-            setResourceColor(overlay, prefix + "accent_device_default_dark", accent1.getS300());
-            setResourceColor(overlay, prefix + "accent_primary_device_default", accent1.getS300());
-            setResourceColor(overlay, prefix + "accent_secondary_device_default", accent2.getS300());
-            setResourceColor(overlay, prefix + "accent_tertiary_device_default", accent3.getS300());
+        setResourceColor(overlay, prefix + "accent_device_default_light", accent1.getS500());
+        setResourceColor(overlay, prefix + "accent_device_default_dark", accent1.getS300());
+        setResourceColor(overlay, prefix + "accent_primary_device_default", accent1.getS300());
+        setResourceColor(overlay, prefix + "accent_secondary_device_default", accent2.getS300());
+        setResourceColor(overlay, prefix + "accent_tertiary_device_default", accent3.getS300());
 
-            setResourceColor(overlay, prefix + "accent_primary_variant_light_device_default", accent1.getS500());
-            setResourceColor(overlay, prefix + "accent_secondary_variant_light_device_default", accent2.getS500());
-            setResourceColor(overlay, prefix + "accent_tertiary_variant_light_device_default", accent3.getS500());
-            setResourceColor(overlay, prefix + "accent_primary_variant_dark_device_default", accent1.getS400());
-            setResourceColor(overlay, prefix + "accent_secondary_variant_dark_device_default", accent2.getS400());
-            setResourceColor(overlay, prefix + "accent_tertiary_variant_dark_device_default", accent3.getS400());
-        }
+        setResourceColor(overlay, prefix + "accent_primary_variant_light_device_default", accent1.getS500());
+        setResourceColor(overlay, prefix + "accent_secondary_variant_light_device_default", accent2.getS500());
+        setResourceColor(overlay, prefix + "accent_tertiary_variant_light_device_default", accent3.getS500());
+        setResourceColor(overlay, prefix + "accent_primary_variant_dark_device_default", accent1.getS400());
+        setResourceColor(overlay, prefix + "accent_secondary_variant_dark_device_default", accent2.getS400());
+        setResourceColor(overlay, prefix + "accent_tertiary_variant_dark_device_default", accent3.getS400());
 
         // The "holo blue" colors are rarely used (mostly by older apps), but for those apps that do use them,
         // let's change them to use shades of the accent color instead of the hardcoded colors. While we're at it,
         // let's do the same with the "material deep teal" colors for the same reason.
 
-        setResourceColor(overlay, prefix + "holo_blue_bright", richerColors ? accent1.getS200() : accent1.getS100());
-        setResourceColor(overlay, prefix + "holo_blue_light", richerColors ? accent1.getS300() : accent1.getS200());
+        setResourceColor(overlay, prefix + "holo_blue_bright", accent1.getS200());
+        setResourceColor(overlay, prefix + "holo_blue_light", accent1.getS300());
         setResourceColor(overlay, prefix + "holo_blue_dark", accent1.getS500());
 
-        setResourceColor(overlay, prefix + "material_deep_teal_200", richerColors ? accent1.getS300() : accent1.getS200());
+        setResourceColor(overlay, prefix + "material_deep_teal_200", accent1.getS300());
         setResourceColor(overlay, prefix + "material_deep_teal_500", accent1.getS500());
     }
 
@@ -1024,37 +1006,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
 
         return new HardwareDefaultSetting(defaultSeedColor, styleAndSource.first,
                 isWallpaper ? COLOR_SOURCE_HOME : COLOR_SOURCE_PRESET);
-    }
-
-    private float fetchFloatValueFromSetting(String overlayPackage) {
-        final String overlayPackageJson = mSecureSettings.getStringForUser(
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
-                mUserTracker.getUserId());
-        if (!TextUtils.isEmpty(overlayPackageJson)) {
-            try {
-                JSONObject object = new JSONObject(overlayPackageJson);
-                float res = (float) object.optDouble(overlayPackage, 1d);
-                return res != 0f ? res : 1f;
-            } catch (JSONException | IllegalArgumentException e) {
-                Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e);
-            }
-        }
-        return 1f;
-    }
-
-    private boolean fetchBooleanValueFromSetting(String overlayPackage) {
-        final String overlayPackageJson = mSecureSettings.getStringForUser(
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
-                mUserTracker.getUserId());
-        if (!TextUtils.isEmpty(overlayPackageJson)) {
-            try {
-                JSONObject object = new JSONObject(overlayPackageJson);
-                return object.optInt(overlayPackage, 0) == 1;
-            } catch (JSONException | IllegalArgumentException e) {
-                Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e);
-            }
-        }
-        return false;
     }
 
     @Override
