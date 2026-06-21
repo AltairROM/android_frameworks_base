@@ -30,6 +30,7 @@ import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_AC
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_DYNAMIC_COLOR;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_SYSTEM_PALETTE;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_THEME_STYLE;
+import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_ENHANCED_COLORS;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_BOTH;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_INDEX;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_SOURCE;
@@ -761,31 +762,35 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         TonalPalette accent2 = mColorScheme.getAccent2();
         TonalPalette accent3 = mColorScheme.getAccent3();
 
-        // Adjust the system primary, secondary, and tertiary accent colors
-        // to use shades that make colors a little deeper.
+        // If "enhanced colors" option is enabled, adjust the system primary, secondary, tertiary, and
+        // default accent colors to use shades that make colors a little deeper.
 
-        setResourceColor(overlay, prefix + "accent_device_default_light", accent1.getS500());
-        setResourceColor(overlay, prefix + "accent_device_default_dark", accent1.getS300());
-        setResourceColor(overlay, prefix + "accent_primary_device_default", accent1.getS300());
-        setResourceColor(overlay, prefix + "accent_secondary_device_default", accent2.getS300());
-        setResourceColor(overlay, prefix + "accent_tertiary_device_default", accent3.getS300());
+        final boolean enhancedColors = fetchBooleanValueFromSetting(OVERLAY_CATEGORY_ENHANCED_COLORS);
+        if (enhancedColors) {
+            setResourceColor(overlay, prefix + "accent_device_default_light", accent1.getS500());
+            setResourceColor(overlay, prefix + "accent_device_default_dark", accent1.getS300());
+            setResourceColor(overlay, prefix + "accent_primary_device_default", accent1.getS300());
+            setResourceColor(overlay, prefix + "accent_secondary_device_default", accent2.getS300());
+            setResourceColor(overlay, prefix + "accent_tertiary_device_default", accent3.getS300());
 
-        setResourceColor(overlay, prefix + "accent_primary_variant_light_device_default", accent1.getS500());
-        setResourceColor(overlay, prefix + "accent_secondary_variant_light_device_default", accent2.getS500());
-        setResourceColor(overlay, prefix + "accent_tertiary_variant_light_device_default", accent3.getS500());
-        setResourceColor(overlay, prefix + "accent_primary_variant_dark_device_default", accent1.getS400());
-        setResourceColor(overlay, prefix + "accent_secondary_variant_dark_device_default", accent2.getS400());
-        setResourceColor(overlay, prefix + "accent_tertiary_variant_dark_device_default", accent3.getS400());
+            setResourceColor(overlay, prefix + "accent_primary_variant_light_device_default", accent1.getS500());
+            setResourceColor(overlay, prefix + "accent_secondary_variant_light_device_default", accent2.getS500());
+            setResourceColor(overlay, prefix + "accent_tertiary_variant_light_device_default", accent3.getS500());
+            setResourceColor(overlay, prefix + "accent_primary_variant_dark_device_default", accent1.getS400());
+            setResourceColor(overlay, prefix + "accent_secondary_variant_dark_device_default", accent2.getS400());
+            setResourceColor(overlay, prefix + "accent_tertiary_variant_dark_device_default", accent3.getS400());
+        }
 
         // The "holo blue" colors are rarely used (mostly by older apps), but for those apps that do use them,
         // let's change them to use shades of the accent color instead of the hardcoded colors. While we're at it,
         // let's do the same with the "material deep teal" colors for the same reason.
 
-        setResourceColor(overlay, prefix + "holo_blue_bright", accent1.getS200());
-        setResourceColor(overlay, prefix + "holo_blue_light", accent1.getS300());
+        setResourceColor(overlay, prefix + "holo_blue_bright", enhancedColors ? accent1.getS200() : accent1.getS100());
+        setResourceColor(overlay, prefix + "holo_blue_light", enhancedColors ? accent1.getS300() : accent1.getS200());
         setResourceColor(overlay, prefix + "holo_blue_dark", accent1.getS500());
 
-        setResourceColor(overlay, prefix + "material_deep_teal_200", accent1.getS300());
+        setResourceColor(overlay, prefix + "material_deep_teal_200", enhancedColors ? accent1.getS300()
+                                                                                    : accent1.getS200());
         setResourceColor(overlay, prefix + "material_deep_teal_500", accent1.getS500());
     }
 
@@ -933,6 +938,21 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             }
         }
         return style;
+    }
+
+    private boolean fetchBooleanValueFromSetting(String overlayPackage) {
+        final String overlayPackageJson = mSecureSettings.getStringForUser(
+                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+                mUserTracker.getUserId());
+        if (!TextUtils.isEmpty(overlayPackageJson)) {
+            try {
+                JSONObject object = new JSONObject(overlayPackageJson);
+                return object.optInt(overlayPackage, 0) == 1;
+            } catch (JSONException | IllegalArgumentException e) {
+                Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e);
+            }
+        }
+        return false;
     }
 
     protected Pair<Integer, String> getHardwareColorSetting() {
