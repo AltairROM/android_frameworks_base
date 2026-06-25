@@ -19,7 +19,6 @@ package com.android.systemui.shade;
 
 import static android.view.WindowInsets.Type.ime;
 
-import static com.android.systemui.Flags.qsComposeFragmentEarlyExpansion;
 import static com.android.systemui.Flags.shadeQsvisibleLogic;
 import static com.android.systemui.classifier.Classifier.QS_COLLAPSE;
 import static com.android.systemui.shade.NotificationPanelViewController.COUNTER_PANEL_OPEN_QS;
@@ -1741,7 +1740,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
         }
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             mConflictingExpansionGesture = false;
-            maybeResetEarlyExpansion();
+            resetEarlyExpansion();
         }
         if (action == MotionEvent.ACTION_DOWN && isFullyCollapsed && isExpansionEnabled()) {
             mTwoFingerExpandPossible = true;
@@ -1810,7 +1809,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                 mInitialHeightOnTouch = mExpansionHeight;
                 initVelocityTracker();
                 trackMovement(event);
-                maybeSetEarlyExpansion();
+                setEarlyExpansion();
                 break;
 
             case MotionEvent.ACTION_POINTER_UP:
@@ -1848,7 +1847,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     flingQsWithCurrentVelocity(y,
                             event.getActionMasked() == MotionEvent.ACTION_CANCEL);
                 } else {
-                    maybeResetEarlyExpansion();
+                    resetEarlyExpansion();
                     traceQsJank(false,
                             event.getActionMasked() == MotionEvent.ACTION_CANCEL);
                 }
@@ -1934,7 +1933,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     mInitialTouchY = y;
                     mInitialTouchX = x;
                     mNotificationStackScrollLayoutController.cancelLongPress();
-                    maybeSetEarlyExpansion();
+                    setEarlyExpansion();
                     return true;
                 } else {
                     mShadeLog.logQsTrackingNotStarted(mInitialTouchY, y, h, touchSlop,
@@ -2120,15 +2119,15 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                 (int) ((y - getInitialTouchY()) / displayDensity), (int) (vel / displayDensity));
     }
 
-    private void maybeSetEarlyExpansion() {
-        if (QSComposeFragment.isEnabled() && qsComposeFragmentEarlyExpansion() && mQs != null) {
+    private void setEarlyExpansion() {
+        if (QSComposeFragment.isEnabled() && mQs != null) {
             mQs.setExpanded(true);
             mMediaHierarchyManager.setQsExpanded(true);
         }
     }
 
-    private void maybeResetEarlyExpansion() {
-        if (QSComposeFragment.isEnabled() && qsComposeFragmentEarlyExpansion()) {
+    private void resetEarlyExpansion() {
+        if (QSComposeFragment.isEnabled()) {
             updateQsState();
             mMediaHierarchyManager.setQsExpanded(getExpanded());
         }
