@@ -16,6 +16,7 @@ package com.android.systemui.plugins.keyguard.ui.clocks
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Rect
+import com.android.internal.util.theme.MonetUtils;
 import com.android.systemui.monet.ColorScheme
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.shared.Flags.ambientAod
@@ -67,10 +68,15 @@ data class ThemeConfig(
     val seedColor: Int?,
 ) {
     fun getDefaultColor(context: Context): Int {
-        return when {
-            seedColor != null -> seedColor!!
-            isDarkTheme -> context.resources.getColor(android.R.color.system_accent1_100)
-            else -> context.resources.getColor(android.R.color.system_accent2_600)
+        val colorType = MonetUtils(context).getLockClockColorType()
+        return if (colorType == MonetUtils.LOCK_CLOCK_COLOR_ACCENT) {
+            context.resources.getColor(android.R.color.system_accent1_500)
+        } else {
+            when {
+                seedColor != null -> seedColor!!
+                isDarkTheme -> context.resources.getColor(android.R.color.system_accent1_100)
+                else -> context.resources.getColor(android.R.color.system_accent2_600)
+            }
         }
     }
 
