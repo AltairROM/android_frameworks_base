@@ -26,6 +26,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.icu.lang.UCharacter;
 import android.icu.text.DateTimePatternGenerator;
 import android.os.Bundle;
@@ -90,6 +91,10 @@ public class Clock extends TextView implements
             "system:" + Settings.System.STATUS_BAR_CLOCK_SECONDS;
     private static final String STATUS_BAR_AM_PM =
             "lineagesystem:" + LineageSettings.System.STATUS_BAR_AM_PM;
+    public static final String STATUS_BAR_CLOCK_PERIOD_SEPARATOR =
+            "system:" + Settings.System.STATUS_BAR_CLOCK_PERIOD_SEPARATOR;
+    public static final String STATUS_BAR_CLOCK_BOLD =
+            "system:" + Settings.System.STATUS_BAR_CLOCK_BOLD;
 
     private final UserTracker mUserTracker;
     private final CommandQueue mCommandQueue;
@@ -114,6 +119,8 @@ public class Clock extends TextView implements
     private int mAmPmStyle = AM_PM_STYLE_SMALL;
     private boolean mShowSeconds;
     private Handler mSecondsHandler;
+    private boolean mPeriodHourMinuteSeparator;
+    private boolean mBoldStatusBarClock;
 
     // Tracks config changes that will make the clock change dimensions
     private final InterestingConfigChanges mInterestingConfigChanges;
@@ -218,7 +225,9 @@ public class Clock extends TextView implements
                     Dependency.get(Dependency.TIME_TICK_HANDLER), UserHandle.ALL);
             Dependency.get(TunerService.class).addTunable(this,
                     STATUS_BAR_CLOCK_SECONDS,
-                    STATUS_BAR_AM_PM);
+                    STATUS_BAR_AM_PM,
+                    STATUS_BAR_CLOCK_PERIOD_SEPARATOR,
+                    STATUS_BAR_CLOCK_BOLD);
             mCommandQueue.addCallback(this);
             mUserTracker.addCallback(mUserChangedCallback, mContext.getMainExecutor());
             mCurrentUserId = mUserTracker.getUserId();
@@ -235,6 +244,7 @@ public class Clock extends TextView implements
             updateClockVisibility();
         }
         updateShowSeconds();
+        applyBoldClockStyle();
     }
 
     @Override
@@ -286,6 +296,7 @@ public class Clock extends TextView implements
                         // Force refresh of dependent variables.
                         mContentDescriptionFormatString = "";
                         mDateTimePatternGenerator = null;
+                        applyBoldClockStyle();
                     }
                 });
             }
@@ -363,8 +374,30 @@ public class Clock extends TextView implements
                 mDateTimePatternGenerator = null;
                 updateClock(true);
                 break;
+            case STATUS_BAR_CLOCK_PERIOD_SEPARATOR:
+                mPeriodHourMinuteSeparator =
+                        TunerService.parseIntegerSwitch(newValue, false);
+                updateClock(true);
+                break;
+            case STATUS_BAR_CLOCK_BOLD:
+                mBoldStatusBarClock =
+                        TunerService.parseIntegerSwitch(newValue, false);
+                applyBoldClockStyle();
+                break;
             default:
                 break;
+        }
+    }
+
+    private void applyBoldClockStyle() {
+        Typeface tf = getTypeface();
+        if (tf == null) {
+            tf = Typeface.DEFAULT;
+        }
+        final int base = tf.getStyle() & ~Typeface.BOLD;
+        final int target = mBoldStatusBarClock ? (base | Typeface.BOLD) : base;
+        if (tf.getStyle() != target) {
+            setTypeface(Typeface.create(tf, target));
         }
     }
 
@@ -415,6 +448,7 @@ public class Clock extends TextView implements
                 mContext.getResources().getDimensionPixelSize(
                         R.dimen.status_bar_clock_end_padding),
                 0);
+        applyBoldClockStyle();
     }
 
 
@@ -509,7 +543,8 @@ public class Clock extends TextView implements
             }
             mClockFormat = new SimpleDateFormat(format);
         }
-        String result = mClockFormat.format(mCalendar.getTime());
+        String result = applyPeriodToFormattedTimeIfNeeded(
+                mClockFormat.format(mCalendar.getTime()));
 
         if (mAmPmStyle != AM_PM_STYLE_NORMAL) {
             int magic1 = result.indexOf(MAGIC1);
@@ -533,6 +568,13 @@ public class Clock extends TextView implements
 
         return result;
 
+    }
+
+    private String applyPeriodToFormattedTimeIfNeeded(String time) {
+        if (!mPeriodHourMinuteSeparator) {
+            return time;
+        }
+        return time.replace(':', '.').replace('\uFF1A', '.');
     }
 
     private boolean mDemoMode;
