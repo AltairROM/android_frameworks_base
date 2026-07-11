@@ -6851,6 +6851,19 @@ public final class Settings {
         public static final String STATUS_BAR_CLOCK_SECONDS = "status_bar_clock_seconds";
 
         /**
+         * Replace colon with period in for the time.
+         * @hide
+         */
+        public static final String STATUS_BAR_CLOCK_PERIOD_SEPARATOR =
+                "status_bar_clock_period_separator";
+
+        /**
+         * Use bold typeface for the status bar clock.
+         * @hide
+         */
+        public static final String STATUS_BAR_CLOCK_BOLD = "status_bar_clock_bold";
+
+        /**
          * Statusbar clock background
          * 0 - hide accented chip  (default)
          * 1 - show accented chip
