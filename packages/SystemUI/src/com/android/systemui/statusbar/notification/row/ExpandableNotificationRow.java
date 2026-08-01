@@ -410,8 +410,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void toggleExpansionState(View v, boolean shouldLogExpandClickMetric) {
-        if (isBundle()
-                || (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot() && !NTForbiddenSwipeDownQSController.get(mContext).getForbiddenSwipeDownQS())) {
+        if ((isBundle()
+                || (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot()))
+                && !NTForbiddenSwipeDownQSController.get(mContext).getForbiddenSwipeDownQS()) {
             mGroupExpansionChanging = true;
 
             if (NotificationBundleUi.isEnabled()) {
