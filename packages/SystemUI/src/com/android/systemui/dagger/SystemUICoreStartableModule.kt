@@ -64,6 +64,7 @@ import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
 import com.android.systemui.usb.StorageNotification
 import com.android.systemui.util.NotificationChannels
 import com.android.systemui.wmshell.WMShell
+import com.google.android.systemui.keyguard.AmbientIndicationCoreStartable
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
@@ -349,6 +350,14 @@ abstract class SystemUICoreStartableModule {
     @IntoMap
     @ClassKey(AxPlatformServiceImpl::class)
     abstract fun bindAxPlatformService(impl: AxPlatformServiceImpl): CoreStartable
+
+    /** Inject into AmbientIndicationCoreStartable. */
+    @Binds
+    @IntoMap
+    @ClassKey(AmbientIndicationCoreStartable::class)
+    abstract fun bindAmbientIndicationCoreStartable(
+        impl: AmbientIndicationCoreStartable
+    ): CoreStartable
 
     @Binds
     @IntoMap

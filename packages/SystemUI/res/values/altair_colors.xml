@@ -13,4 +13,8 @@
 
     <!-- Notification counter -->
     <color name="notification_number_text_color">#ff000000</color>
+
+    <!-- Ambient indication -->
+    <color name="material_deep_teal_300">@*android:color/material_deep_teal_300</color>
+    <color name="material_grey_100">@*android:color/material_grey_100</color>
 </resources>
