@@ -3135,6 +3135,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     @Override
+    public void setBlurRegionSuppressed(boolean suppressed) {
+        super.setBlurRegionSuppressed(suppressed);
+        if (mIsSummaryWithChildren) {
+            mChildrenContainer.setBlurRegionSuppressed(suppressed);
+        }
+    }
+
+    @Override
     public int getHeightWithoutLockscreenConstraints() {
         mIgnoreLockscreenConstraints = true;
         final int height = getIntrinsicHeight();
