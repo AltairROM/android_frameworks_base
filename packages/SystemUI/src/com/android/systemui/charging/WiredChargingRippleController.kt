@@ -139,10 +139,14 @@ constructor(
             object : ConfigurationController.ConfigurationListener {
                 override fun onUiModeChanged() {
                     updateRippleColor()
+                    axRippleView = AXRippleView(context, attrs = null)
+                    axChargingCircleView = AXChargingCircleView(context, attrs = null)
                 }
 
                 override fun onThemeChanged() {
                     updateRippleColor()
+                    axRippleView = AXRippleView(context, attrs = null)
+                    axChargingCircleView = AXChargingCircleView(context, attrs = null)
                 }
 
                 override fun onConfigChanged(newConfig: Configuration?) {
