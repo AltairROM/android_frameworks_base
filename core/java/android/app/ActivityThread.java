@@ -7429,18 +7429,16 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
-        final Application app = getApplication();
-        ResourcesImpl beforeImpl = app != null ? app.getResources().getImpl() : null;
+        ResourcesImpl beforeImpl = getApplication().getResources().getImpl();
 
         synchronized (mResourcesManager) {
             // Update all affected Resources objects to use new ResourcesImpl
             mResourcesManager.applyAllPendingAppInfoUpdates();
         }
 
-        ResourcesImpl afterImpl = app != null ? app.getResources().getImpl() : null;
+        ResourcesImpl afterImpl = getApplication().getResources().getImpl();
 
-        if (beforeImpl != null && afterImpl != null && (beforeImpl != afterImpl)
-                && !Arrays.equals(beforeImpl.getAssets().getApkAssets(),
+        if ((beforeImpl != afterImpl) && !Arrays.equals(beforeImpl.getAssets().getApkAssets(),
                 afterImpl.getAssets().getApkAssets())) {
             List<String> beforeAssets = Arrays.asList(beforeImpl.getAssets().getApkPaths());
             List<String> afterAssets = Arrays.asList(afterImpl.getAssets().getApkPaths());
@@ -7461,6 +7459,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        final Application app = getApplication();
         if (app != null) {
             updateVariableFontFamilies(app);
         }
