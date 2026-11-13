@@ -1783,9 +1783,6 @@ public class ActivityManagerService extends IActivityManager.Stub
     static final HostingRecord sNullHostingRecord =
             new HostingRecord(HostingRecord.HOSTING_TYPE_EMPTY);
 
-    private volatile boolean mThreeFingersSwipeEnabled;
-    private volatile boolean mThreeFingerGestureActive;
-
     /**
      * Used to notify activity lifecycle events.
      */
@@ -21279,21 +21276,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         UUID errorId = mTraceErrorLogger.getOrCreateErrorId(anrId);
         mAnrWarningController.notifyAnrWarning(
                 uid, anrId, errorId, anrType, consumedTimeMs, timeoutMs, description);
-    }
-
-    @Override
-    public boolean isThreeFingersSwipeActive() {
-        return mThreeFingersSwipeEnabled && mThreeFingerGestureActive;
-    }
-
-    @Override
-    public void setThreeFingersSwipeActive(boolean active) {
-        mThreeFingersSwipeEnabled = active;
-    }
-
-    @Override
-    public void setThreeGestureStateActive(boolean active) {
-        mThreeFingerGestureActive = active;
     }
 
     @Override
