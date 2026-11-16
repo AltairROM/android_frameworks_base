@@ -482,7 +482,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
     private final ScrimUtils.ScrimEventListener mScrimListener =
             new ScrimUtils.ScrimEventListener() {
                 @Override
-                public void onNotificationPosted(StatusBarNotification sbn) {
+                public void onNotificationPosted(StatusBarNotification sbn, boolean isSilent) {
                     mView.updateIfNeeded();
                 }
             };
