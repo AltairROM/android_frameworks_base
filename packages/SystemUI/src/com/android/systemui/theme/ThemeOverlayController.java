@@ -30,7 +30,6 @@ import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_AC
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_DYNAMIC_COLOR;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_SYSTEM_PALETTE;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_THEME_STYLE;
-import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_ENHANCED_COLORS;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_BOTH;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_LUMINANCE_FACTOR;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CHROMA_FACTOR;
@@ -76,7 +75,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.internal.graphics.ColorUtils;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.Dumpable;
 import com.android.systemui.broadcast.BroadcastDispatcher;
@@ -442,7 +440,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                         mUserManager.isManagedProfile(newUserHandle.getIdentifier());
                 if (!mDeviceProvisionedController.isUserSetup(newUserHandle.getIdentifier())
                         && isManagedProfile) {
-                    Log.i(TAG, "User setup not finished when " + intent.getAction()
+                    Log.i(TAG, "User setup not finished when " + intent.getAction() 
                             + " was received. Deferring... Managed profile? " + isManagedProfile);
                     return;
                 }
@@ -782,7 +780,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         assignColorsToOverlay(mAccentOverlay,
                 DynamicColors.getAllAccentPalette(
                         luminanceFactor, chromaFactor, wholePalette, paletteValues));
-        adjustSystemResourceColors(mAccentOverlay, mColorScheme);
 
         mNeutralOverlay = newFabricatedOverlay("neutral");
         final float neutralValue = paletteValues[PALETTE_NEUTRAL];
@@ -824,47 +821,80 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         });
     }
 
-    private void adjustSystemResourceColors(FabricatedOverlay overlay, ColorScheme colorScheme) {
-        String prefix = "android:color/";
-        TonalPalette accent1 = mColorScheme.getAccent1();
-        TonalPalette accent2 = mColorScheme.getAccent2();
-        TonalPalette accent3 = mColorScheme.getAccent3();
+    private static int getAdjustedDynamicArgb(DynamicColor color, ColorScheme scheme,
+            @Nullable float[] valueFactors) {
+        final DynamicScheme dynamicScheme = scheme.getMaterialScheme();
+        final int original = color.getArgb(dynamicScheme);
+        if (valueFactors == null || color.palette == null) return original;
 
-        // If "enhanced colors" option is enabled, adjust the system primary, secondary, tertiary, and
-        // default accent colors to use shades that make colors a little deeper.
+        final float factor = valueFactorForPalette(
+                color.palette.apply(dynamicScheme), dynamicScheme, valueFactors);
+        if (factor == 1f) return original;
 
-        final boolean enhancedColors = fetchBooleanValueFromSetting(OVERLAY_CATEGORY_ENHANCED_COLORS);
-        if (enhancedColors) {
-            setResourceColor(overlay, prefix + "accent_device_default_light", accent1.getS500());
-            setResourceColor(overlay, prefix + "accent_device_default_dark", accent1.getS300());
-            setResourceColor(overlay, prefix + "accent_primary_device_default", accent1.getS300());
-            setResourceColor(overlay, prefix + "accent_secondary_device_default", accent2.getS300());
-            setResourceColor(overlay, prefix + "accent_tertiary_device_default", accent3.getS300());
-
-            setResourceColor(overlay, prefix + "accent_primary_variant_light_device_default", accent1.getS500());
-            setResourceColor(overlay, prefix + "accent_secondary_variant_light_device_default", accent2.getS500());
-            setResourceColor(overlay, prefix + "accent_tertiary_variant_light_device_default", accent3.getS500());
-            setResourceColor(overlay, prefix + "accent_primary_variant_dark_device_default", accent1.getS400());
-            setResourceColor(overlay, prefix + "accent_secondary_variant_dark_device_default", accent2.getS400());
-            setResourceColor(overlay, prefix + "accent_tertiary_variant_dark_device_default", accent3.getS400());
-        }
-
-        // The "holo blue" colors are rarely used (mostly by older apps), but for those apps that do use them,
-        // let's change them to use shades of the accent color instead of the hardcoded colors. While we're at it,
-        // let's do the same with the "material deep teal" colors for the same reason.
-
-        setResourceColor(overlay, prefix + "holo_blue_bright", enhancedColors ? accent1.getS200() : accent1.getS100());
-        setResourceColor(overlay, prefix + "holo_blue_light", enhancedColors ? accent1.getS300() : accent1.getS200());
-        setResourceColor(overlay, prefix + "holo_blue_dark", accent1.getS500());
-
-        setResourceColor(overlay, prefix + "material_deep_teal_200", enhancedColors ? accent1.getS300()
-                                                                                    : accent1.getS200());
-        setResourceColor(overlay, prefix + "material_deep_teal_500", accent1.getS500());
+        final Hct hct = Hct.fromInt(original);
+        hct.setTone(Math.max(0d, Math.min(100d, hct.getTone() * factor)));
+        return (original & 0xff000000) | (hct.toInt() & 0x00ffffff);
     }
 
-    private void setResourceColor(FabricatedOverlay overlay, String resourceName, int colorValue) {
-        overlay.setResourceValue(resourceName, TYPE_INT_COLOR_ARGB8, ColorUtils.setAlphaComponent(colorValue, 0xFF),
-                null);
+    private static float valueFactorForPalette(TonalPalette palette, DynamicScheme scheme,
+            float[] valueFactors) {
+        if (palette == scheme.primaryPalette) {
+            return valueFactors[PALETTE_PRIMARY];
+        } else if (palette == scheme.secondaryPalette) {
+            return valueFactors[PALETTE_SECONDARY];
+        } else if (palette == scheme.tertiaryPalette) {
+            return valueFactors[PALETTE_TERTIARY];
+        } else if (palette == scheme.neutralPalette
+                || palette == scheme.neutralVariantPalette) {
+            return valueFactors[PALETTE_NEUTRAL];
+        }
+        // Error palette and any palette built on the fly are left untouched.
+        return 1f;
+    }
+
+    /**
+     * Checks if the color scheme in mColorScheme matches the current system palettes.
+     *
+     * @param managedProfiles List of managed profiles for this user.
+     */
+    private boolean colorSchemeIsApplied(Set<UserHandle> managedProfiles) {
+        final float[] valueFactors = mPaletteValueFactors;
+        final ArraySet<UserHandle> allProfiles = new ArraySet<>(managedProfiles);
+        allProfiles.add(UserHandle.SYSTEM);
+        for (UserHandle userHandle : allProfiles) {
+            Resources res = userHandle.isSystem()
+                    ? mResources : mContext.createContextAsUser(userHandle, 0).getResources();
+            Resources.Theme theme = mContext.getTheme();
+            MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
+            if (!(res.getColor(android.R.color.system_accent1_500, theme)
+                    == mColorScheme.getAccent1().getS500()
+                    && res.getColor(android.R.color.system_accent2_500, theme)
+                    == mColorScheme.getAccent2().getS500()
+                    && res.getColor(android.R.color.system_accent3_500, theme)
+                    == mColorScheme.getAccent3().getS500()
+                    && res.getColor(android.R.color.system_neutral1_500, theme)
+                    == mColorScheme.getNeutral1().getS500()
+                    && res.getColor(android.R.color.system_neutral2_500, theme)
+                    == mColorScheme.getNeutral2().getS500()
+                    && res.getColor(android.R.color.system_outline_variant_dark, theme)
+                    == getAdjustedDynamicArgb(dynamicColors.outlineVariant(),
+                            mDarkColorScheme, valueFactors)
+                    && res.getColor(android.R.color.system_outline_variant_light, theme)
+                    == getAdjustedDynamicArgb(dynamicColors.outlineVariant(),
+                            mLightColorScheme, valueFactors)
+                    && res.getColor(android.R.color.system_primary_container_dark, theme)
+                    == getAdjustedDynamicArgb(dynamicColors.primaryContainer(),
+                            mDarkColorScheme, valueFactors)
+                    && res.getColor(android.R.color.system_primary_container_light, theme)
+                    == getAdjustedDynamicArgb(dynamicColors.primaryContainer(),
+                            mLightColorScheme, valueFactors)
+                    && res.getColor(android.R.color.system_primary_fixed, theme)
+                    == getAdjustedDynamicArgb(dynamicColors.primaryFixed(),
+                            mLightColorScheme, valueFactors))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @SuppressWarnings("StringCaseLocaleUsage") // Package name is not localized
@@ -1003,21 +1033,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             }
         }
         return style;
-    }
-
-    private boolean fetchBooleanValueFromSetting(String overlayPackage) {
-        final String overlayPackageJson = mSecureSettings.getStringForUser(
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
-                mUserTracker.getUserId());
-        if (!TextUtils.isEmpty(overlayPackageJson)) {
-            try {
-                JSONObject object = new JSONObject(overlayPackageJson);
-                return object.optInt(overlayPackage, 0) == 1;
-            } catch (JSONException | IllegalArgumentException e) {
-                Log.i(TAG, "Failed to parse THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e);
-            }
-        }
-        return false;
     }
 
     protected Pair<Integer, String> getHardwareColorSetting() {
