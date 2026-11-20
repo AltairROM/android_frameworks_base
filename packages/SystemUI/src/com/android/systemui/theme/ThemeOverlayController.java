@@ -919,51 +919,6 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         return false;
     }
 
-    /**
-     * Checks if the color scheme in mColorScheme matches the current system palettes.
-     *
-     * @param managedProfiles List of managed profiles for this user.
-     */
-    private boolean colorSchemeIsApplied(Set<UserHandle> managedProfiles) {
-        final float[] valueFactors = mPaletteValueFactors;
-        final ArraySet<UserHandle> allProfiles = new ArraySet<>(managedProfiles);
-        allProfiles.add(UserHandle.SYSTEM);
-        for (UserHandle userHandle : allProfiles) {
-            Resources res = userHandle.isSystem()
-                    ? mResources : mContext.createContextAsUser(userHandle, 0).getResources();
-            Resources.Theme theme = mContext.getTheme();
-            MaterialDynamicColors dynamicColors = new MaterialDynamicColors();
-            if (!(res.getColor(android.R.color.system_accent1_500, theme)
-                    == mColorScheme.getAccent1().getS500()
-                    && res.getColor(android.R.color.system_accent2_500, theme)
-                    == mColorScheme.getAccent2().getS500()
-                    && res.getColor(android.R.color.system_accent3_500, theme)
-                    == mColorScheme.getAccent3().getS500()
-                    && res.getColor(android.R.color.system_neutral1_500, theme)
-                    == mColorScheme.getNeutral1().getS500()
-                    && res.getColor(android.R.color.system_neutral2_500, theme)
-                    == mColorScheme.getNeutral2().getS500()
-                    && res.getColor(android.R.color.system_outline_variant_dark, theme)
-                    == getAdjustedDynamicArgb(dynamicColors.outlineVariant(),
-                            mDarkColorScheme, valueFactors)
-                    && res.getColor(android.R.color.system_outline_variant_light, theme)
-                    == getAdjustedDynamicArgb(dynamicColors.outlineVariant(),
-                            mLightColorScheme, valueFactors)
-                    && res.getColor(android.R.color.system_primary_container_dark, theme)
-                    == getAdjustedDynamicArgb(dynamicColors.primaryContainer(),
-                            mDarkColorScheme, valueFactors)
-                    && res.getColor(android.R.color.system_primary_container_light, theme)
-                    == getAdjustedDynamicArgb(dynamicColors.primaryContainer(),
-                            mLightColorScheme, valueFactors)
-                    && res.getColor(android.R.color.system_primary_fixed, theme)
-                    == getAdjustedDynamicArgb(dynamicColors.primaryFixed(),
-                            mLightColorScheme, valueFactors))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @SuppressWarnings("StringCaseLocaleUsage") // Package name is not localized
     private void updateThemeOverlays(boolean forceUpdate) {
         final int currentUser = mUserTracker.getUserId();
